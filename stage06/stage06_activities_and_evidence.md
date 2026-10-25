@@ -145,7 +145,16 @@ Record meaningful required use, not every trivial completion. Repeat per signifi
 
 Repeat per member. Include only categories that describe actual work; write not applicable where appropriate. Pairing or mentoring can be supported by a short corroborated note.
 
-- Member: [response]
+- Member: Patryk 
+- Implementation: Implemented PatientService.find_patient(), PractitionerService.find_practitioner() and AppointmentService.cancel_appointment() on three separate feature branches. 
+- Testing: Created tests in test_services.py for patient lookup, practitioner lookup and appointment cancellation
+- Review: Awaiting another member reviews of the three pull requests. No completed review contribution to report yet.
+- Issue refinement: Created three GitHub issues covering FR-02 Patient Search, FR-06/FR-07 Appointment Cancellation and the FR-03 supporting practitioner lookup operation. Included acceptance criteria and Definitions of Done.
+- Design and responsibility discussion: Followed the supplied SmartCare architecture by keeping lookup coordination in the service classes, using the shared data store and leaving appointment status transitions with the domain object.
+- Debugging or integration: Identified and corrected an indentation error in find_patient() after a test raised AttributeError.
+- Documentation or team support: Completed the Stage 6 requirement drafts, tutorial questions and team workflow documentation. Created the shared GitHub repository and arranged access for the other group members.
+
+Member: [response]
 - Implementation: [work and evidence]
 - Testing: [work and evidence]
 - Review: [work and evidence]
@@ -158,49 +167,49 @@ Repeat per member. Include only categories that describe actual work; write not 
 
 Why is a high commit count not necessarily evidence of strong contribution?
 
-[response]
+A high commit count doesnt mean someone has contributed more because commits can vary a lot in size, quality, and their importance. For example, one person might make lots of small changes whiule another person might make fewer but a lot more signifigant changes. Contributions should also consider testing, reviewing of code, solving problems, and helping ntergrate the project rather than just focusing on the number of commits made.
 
 ## L Stage 6 formative questions
 
 1. What is version control?
 
-[response]
+Version control is a system that tracks changes made to files over time, it allowes devs to manage diffrent versions, restore changes and collaborate on projects.
 
 2. Why is a feature branch useful?
 
-[response]
+Feature branch allows devs to work on a specific feature without affecting the main version until the changes have been reviewed and approved.
 
 3. What makes a commit a good engineering commit?
 
-[response]
+A good commit contrains a meaningful change with a clear message the explains what was added, fixed, or modified.
 
 4. What is a pull request?
 
-[response]
+A pull request is a request to merge changes from other branches. It allows other devs to discuss teh cahnges before they get added into the main project.
 
 5. What is the purpose of code review?
 
-[response]
+Code reviews help with finding errors, checks that requirements are being satified, improves the code quality and ensure changes are following the projects design.
 
 6. What does a Git diff show?
 
-[response]
+A git diff shows the diffrences between versions of files, including lines that have been added or removed
 
 7. What is a Definition of Done?
 
-[response]
+It is a set of agreed conditions that must be met before a task can be considerd complete, including testing, implementation, review and documentation.
 
 8. What is the appropriate role of GitHub Copilot in pull-request review?
 
-[response]
+It can assist reviewers by suggesting potential problems and improvements, but it needs to be checked by a human against the actual code, requirements and test results. It cant replace human reviews or approvals.
 
 9. Why should individual contribution not be judged only by commit count?
 
-[response]
+Commit count doesnt reflect the quality or importance of work. They also include testing, reviewing code, debugging, planning and supporting other team members.
 
 10. What is the Stage 6 engineering rule?
 
-[response]
+A change should be traceable from its requirement through a GitHub issue, focused branch, implementation, tests, review and intergration. Passing tests alone cannot justify merging code.
 
 ## M Completion and handover
 
