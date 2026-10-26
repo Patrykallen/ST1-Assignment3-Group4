@@ -133,8 +133,14 @@ class AppointmentService:
         return appointment
 
     
+    
     def cancel_appointment(self, appointment_id: str) -> Appointment:
-        
+        """Cancel a scheduled appointment and return the stored object.
+
+        Raise ValueError for invalid IDs or illegal state transitions.
+        Raise LookupError if the appointment does not exist.
+        Retain cancelled appointments in the shared data store.
+        """
         appointment = self.data_store.find_appointment(appointment_id)
 
         if appointment is None:
@@ -143,6 +149,7 @@ class AppointmentService:
         appointment.cancel()
 
         return appointment
+
 
 
     def list_practitioner_appointments(

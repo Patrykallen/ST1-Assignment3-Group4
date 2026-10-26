@@ -34,6 +34,7 @@ def test_cancel_scheduled_appointment():
     assert result is appointment
     assert appointment.status is AppointmentStatus.CANCELLED
     assert appointment_service.find_appointment("A001") is appointment
+    assert appointment in store.list_appointments()
 
 
 def test_cancel_appointment_twice():
