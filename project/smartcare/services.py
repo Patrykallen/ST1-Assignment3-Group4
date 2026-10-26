@@ -132,8 +132,6 @@ class AppointmentService:
             raise LookupError('Appointment not found')
         return appointment
 
-    
-    
     def cancel_appointment(self, appointment_id: str) -> Appointment:
         """Cancel a scheduled appointment and return the stored object.
 
