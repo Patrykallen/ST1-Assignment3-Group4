@@ -100,23 +100,60 @@ Create at least two focused issues. Add a linked practitioner-lookup issue or an
 
 Repeat this block per PR. Record actual events, not planned approvals.
 
-- PR link and title: [response]
-- Linked issue and requirement: [response]
-- Feature branch: [response]
-- Changed behaviour: [response]
-- Meaningful commits: [links]
-- Test command, directory and observed result: [response]
-- Another-member reviewer: [response]
-- Human observations recorded before Copilot: [link and time]
-- Requirement, responsibilities, test assertions and unrelated-scope checks: [response]
-- Key feedback: [response]
-- Author response/change and verification: [response]
-- Reviewer recheck and approval: [link]
-- Merge outcome and SHA: [response]
-- Significant Copilot assistance: [summary or none]
-- Linked issue closure: [response]
-- Each member updated main: [member and confirmation]
-- Integrated verification after merge: [command, directory, result and code SHA]
+- PR link and title: https://github.com/Patrykallen/ST1-Assignment3-Group4/pull/5 - FR02: Implement patinet search by ID with tests
+- Linked issue and requirement: https://github.com/Patrykallen/ST1-Assignment3-Group4/issues/2 - FR02 Patient Search
+- Feature branch: feature/fr02-patient-search
+- Changed behaviour: Implemented patient lookup
+- Meaningful commits: Docstring correction implementation
+- Test command, directory and observed result: python -m pytest from project/ — 16 passed on the feature branch
+- Another-member reviewer: Muthuraman
+- Human observations recorded before Copilot: https://github.com/Patrykallen/ST1-Assignment3-Group4/pull/5#issuecomment-6416459455
+- Requirement, responsibilities, test assertions and unrelated-scope checks: Tests verify object identity, unknown IDs, whitespace, case sensitivity and invalid IDs. No unrelated functionality was intentionally changed.
+- Key feedback: Clarify how whitespace and caps are handeled
+- Author response/change and verification: Explained that whitespace is trimmed but ID intentially remain case sensitive. Added the docstring after the copilot review and ran tests with 16 passing 
+- Reviewer recheck and approval: Given Approval by Muthuraman to merge
+- Merge outcome and SHA: 7a260a5c4b36ad5769dfdaf4a46ba8f6cdd04cf3
+- Significant Copilot assistance: Copilot reviewed the diff, found no concerns and suggested adding docstring
+- Linked issue closure: Open
+- Each member updated main: Done
+- Integrated verification after merge: python -m pytest from project/ — 16 passed full sha:0df34594b539952faf9c9814ef28bc7278559088.
+
+FR-03
+- PR link and title: https://github.com/Patrykallen/ST1-Assignment3-Group4/pull/6 — Implement practitioner lookup by ID with tests
+- Linked issue and requirement: https://github.com/Patrykallen/ST1-Assignment3-Group4/issues/4 - FR-03 supporting practitioner lookup
+- Feature branch: feature/practitioner-lookup
+- Changed behaviour: Implemented Practioner search.
+- Meaningful commits: Commited Copilot improvements
+- Test command, directory and observed result: python -m pytest from project/ — 16 passed on the original feature branch
+- Another-member reviewer: Muthuraman
+- Human observations recorded before Copilot: https://github.com/Patrykallen/ST1-Assignment3-Group4/pull/6#issuecomment-6416202668
+- Requirement, responsibilities, test assertions and unrelated-scope checks: Uses data store to validate and lookup IDs. Tests verify object identity, trimmed IDs, case sensitive, error handling. No new dependencies were added
+- Key feedback: The human reviewer identified no necessary changes.
+- Author response/change and verification: Accepted both Copilot suggestions
+- Reviewer recheck and approval: Given approval to merge by Muthuraman
+- Merge outcome and SHA: f9f8ce3bfae7fd0f2088d8a2c7e17969d9959e34
+- Significant Copilot assistance: Reviewed diff, found no concerns, reccomeneded optional changes
+- Linked issue closure: Open
+- Each member updated main: Done
+- Integrated verification after merge: python -m pytest from project/  - Final sha:0df34594b539952faf9c9814ef28bc7278559088.
+
+- PR link and title: https://github.com/Patrykallen/ST1-Assignment3-Group4/pull/7 — FR-06/FR-07: Implement appointment cancellation with retained history
+- Linked issue and requirement: https://github.com/Patrykallen/ST1-Assignment3-Group4/issues/3
+- Feature branch: feature/fr06-appointment-cancellation
+- Changed behaviour: Implemented Cancel appointments
+- Meaningful commits: Commited Copilot changes
+- Test command, directory and observed result: python -m pytest from project/ — 16 passed on the original cancellation branch
+- Another-member reviewer: Muthuraman
+- Human observations recorded before Copilot: https://github.com/Patrykallen/ST1-Assignment3-Group4/pull/7#issuecomment-6408058370
+- Requirement, responsibilities, test assertions and unrelated-scope checks: ancellation uses the existing domain transition rather than directly changing protected status. No new dependencies were introduced.
+- Key feedback: Human reviewer suggested making the error messages more informative and clarification of cancellation reutrn behaviour. Copilot found missing docstring, whitespaces, and an extra assert that improved the tests.
+- Author response/change and verification: Explained that cancellation returns the original Appointment object and that invalid transitions raise ValueErrors. The updated branch passed 16 tests. Resolved the test_services.py merge conflict while retaining all three feature test sets, then observed 32 passing tests.
+- Reviewer recheck and approval: Given approval by Muthuraman to merge
+- Merge outcome and SHA: 0df34594b539952faf9c9814ef28bc7278559088
+- Significant Copilot assistance: Reviewed diff, found no concers, gave optional improvements
+- Linked issue closure: Open
+- Each member updated main: Done
+- Integrated verification after merge: python -m pytest from project/ - Final sha:0df34594b539952faf9c9814ef28bc7278559088.
 
 ## H Copilot collaboration record
 
@@ -190,14 +227,14 @@ Repeat per member. Include only categories that describe actual work; write not 
 - Debugging or integration: Identified and corrected an indentation error in find_patient() after a test raised AttributeError.
 - Documentation or team support: Completed the Stage 6 requirement drafts, tutorial questions and team workflow documentation. Created the shared GitHub repository and arranged access for the other group members.
 
-Member: [response]
-- Implementation: [work and evidence]
-- Testing: [work and evidence]
-- Review: [work and evidence]
-- Issue refinement: [work and evidence]
-- Design and responsibility discussion: [work and evidence]
-- Debugging or integration: [work and evidence]
-- Documentation or team support: [work and evidence]
+Member: Muthuraman
+- Implementation: Not applicable
+- Testing: Reviewed test coverage in the three pull request
+- Review: Reviewed FR-02, FR-03, FR06/07. Commented on error handling, whitespace and case sensitivty
+- Issue refinement: N/A
+- Design and responsibility discussion: Asked about ID normalisation, error handling, and invlaid cancellation attempts.
+- Debugging or integration: N/A
+- Documentation or team support: Provided review feedback in form of comments on github for the three PR
 
 ## K Exit question
 
@@ -249,14 +286,14 @@ A change should be traceable from its requirement through a GitHub issue, focuse
 
 ## M Completion and handover
 
-- Starting SHA: [response]
-- Final Stage 6 code SHA: [response]
-- Test command: [response]
-- Working directory: [response]
-- Observed result: [response]
-- PR and another-member reviewer: [links]
-- Unresolved issue or none: [response]
-- Stage 7 handover status: [ready for tutor checkpoint / unresolved work]
+- Starting SHA: ad4e7caa803758e440dbbe395cd4e3cfd6678ddf
+- Final Stage 6 code SHA: 0df34594b539952faf9c9814ef28bc7278559088
+- Test command: python -m pytest
+- Working directory: project/
+- Observed result: 32 passed, 0 failed. All passed on the merged main branch
+- PR and another-member reviewer: FR02, FR03, FR06/07 and all were reviewed by Muthuraman who found no major issues 
+- Unresolved issue or none: No issues left unresolved
+- Stage 7 handover status: Ready for work to begin on stage 7
 - Final submitted SHA if later than tested SHA: [response and evidence-only difference]
 
 - [ ] Three Stage 6 service targets completed and checked.
