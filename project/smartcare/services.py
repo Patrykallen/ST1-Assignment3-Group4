@@ -142,13 +142,22 @@ class AppointmentService:
         return appointment
 
     def cancel_appointment(self, appointment_id: str) -> Appointment:
-        """Stage 6: cancel through the domain method and retain the
-        appointment.
+        """Cancel a scheduled appointment and return the stored object.
 
-        Return the cancelled object. Unknown IDs raise LookupError;
-        invalid transitions raise ValueError and leave state unchanged.
+        Raise ValueError for invalid IDs or illegal state transitions.
+        Raise LookupError if the appointment does not exist.
+        Retain cancelled appointments in the shared data store.
         """
-        raise NotImplementedError('Stage 6: appointment cancellation')
+        appointment = self.data_store.find_appointment(appointment_id)
+
+        if appointment is None:
+            raise LookupError('Appointment not found')
+
+        appointment.cancel()
+
+        return appointment
+
+
 
     def list_practitioner_appointments(
         self,
