@@ -18,12 +18,16 @@ def test_find_existing_practitioner():
     assert result is practitioner
 
 
+
 def test_find_unknown_practitioner():
     store = SmartCareDataStore()
     service = PractitionerService(store)
 
     with pytest.raises(LookupError):
         service.find_practitioner("DR999")
+
+    assert store.list_practitioners() == []
+
 
 
 def test_find_practitioner_with_whitespace():

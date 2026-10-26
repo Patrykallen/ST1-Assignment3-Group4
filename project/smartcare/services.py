@@ -65,7 +65,11 @@ class PractitionerService:
 
     
     def find_practitioner(self, practitioner_id: str) -> Practitioner:
-        
+        """Return the original stored practitioner for a valid ID.
+
+        Raise ValueError for invalid IDs and LookupError if not found.
+        Do not create or replace practitioner records.
+        """
         practitioner = self.data_store.find_practitioner(practitioner_id)
 
         if practitioner is None:
