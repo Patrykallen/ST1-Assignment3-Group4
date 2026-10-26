@@ -68,15 +68,19 @@ class PractitionerService:
         self.data_store.add_practitioner(practitioner)
         return practitioner
 
+    
     def find_practitioner(self, practitioner_id: str) -> Practitioner:
-        """Stage 6 TODO: return the stored practitioner for a valid ID.
+        """Return the original stored practitioner for a valid ID.
 
-        Completion must raise LookupError for absence and ValueError for
-        a blank/invalid ID. It must not create a replacement
-        practitioner. The starter deliberately raises
-        NotImplementedError.
+        Raise ValueError for invalid IDs and LookupError if not found.
+        Do not create or replace practitioner records.
         """
-        raise NotImplementedError('Stage 6: practitioner lookup')
+        practitioner = self.data_store.find_practitioner(practitioner_id)
+
+        if practitioner is None:
+            raise LookupError('Practitioner not found')
+
+        return practitioner
 
 
 class AppointmentService:
