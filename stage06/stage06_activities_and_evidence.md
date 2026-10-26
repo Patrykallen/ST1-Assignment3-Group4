@@ -122,24 +122,60 @@ Repeat this block per PR. Record actual events, not planned approvals.
 
 Record meaningful required use, not every trivial completion. Repeat per significant interaction.
 
-- Member and task: [response]
-- Prompt/purpose and relevant issue/diff: [response]
-- Summary of output: [response]
-- Human check against actual code, requirements and tests: [response]
-- Decision — Accept / Modify / Reject: [select]
-- Reason: [response]
-- Verification/evidence: [link and result]
+- Member and task: Patrykallen - FR-02 Patient Search review
+- Prompt/purpose and relevant issue/diff: Used GitHub Copilot to review the FR-02 PR diff against the requirements, acceptance criteria, existing SmartCare architecture and the tests.
+- Summary of output: It found no Important Issues. It identified that the implementation satisfies FR-02 and that the tests covered all required scenarios. It also noticed that the find_patient method was missing a docstring and said it should be restored
+- Human check against actual code, requirements and tests: Verified the method uses the supplied SmartCareDataStore, returns the original Patient object and handles invalid/unknown IDs correctly. Checked the docstring recommendation against the assignment guidelines.
+- Decision — Accept / Modify / Reject: Accept
+- Reason: Adding the docstring improves the readablity and documents the expected behaviour.
+- Verification/evidence: Restored the docstring and ran python -m pytest from project/. Observed result: 16 passed
+
+- Member and task: Patrykallen - Practitioner
+- Prompt/purpose and relevant issue/diff: Asked GitHub Copilot to review the Practitioner Lookup PR diff against the Stage 6 acceptance criteria
+- Summary of output: Copilot found no concerns. It found two optional improvements: adding the docstring and checking that unsuccessful practitioner lookups dont create new records.
+- Human check against actual code, requirements and tests: Verified that existing data store does ID validation adn lookup, and that the service raises LookupError for unknown IDs. Checked both suggestions with Stage 6 requirements and confirmed that they would improve the tests and documentation without changing the behaviour
+- Decision — Accept / Modify / Reject: Accept
+- Reason: The docstring says what the method does, while the extra assertion verifies that wrong lookups leave the practitioner store empty
+- Verification/evidence: Added the docstring and added an assertion using store.list_practitioners() to check that no records were created. Ran pytest and had 16 tests passed.
+
+- Member and task: Patrykallen - FR-06/07 Appointment Cancellation PR review.
+- Prompt/purpose and relevant issue/diff: Asked GitHub Copilot to review the appointment cancellation PR diff against FR-06 cancellation, FR-07 retained history
+- Summary of output: Copilot found no issues. It identified three optional improvements:adding a docstring, removing whitespace, and adding an assertion that cancelled appointments remain the the data store appointment list.
+- Human check against actual code, requirements and tests: Verified that cancellation uses Appointment.cancel() method, returns the stored object and retains cancelled appointments. Confirmed that the changes improve it without changing the needed functionality.
+- Decision — Accept / Modify / Reject: Accept
+- Reason: The changes improve clarity and provide stronger verifcation without altering behaviour.
+- Verification/evidence: Added the docstring, added an assertion using store.list_appointments() and ran pytest with 16 passed.
 
 ## I Human versus Copilot review comparison
+FR-02
+- Human reviewer noticed before consulting Copilot: Muthu identified that the method handled unknown ID using LookupError and that the tests covered the whitespace case sense etc. He also questioned whether spaces and caps were handled automatically
+- Copilot noticed: It found no issues. All it found was that find_patient() was missing a docstring
+- Overlap: Both reviews considered ID validation
+- What did the human reviewer notice that Copilot did not: The human questioned whether the implementation cleaned or normalised caps. This led to carifaction that whitespace was getting trimmed but ID remained case sensitive on purpose.
+- What did Copilot identify that the human reviewer initially missed: Copilot found that there was a missing docstring.
+- Unsupported or incorrect Copilot suggestion: None, All suggestions were consistent with the Stage 6 requirements and it said that it could not verify the test results itself.
+- Human judgement accepted, modified or rejected, and why: Accepted the idea to add the docstring because it improves the readability. 
+- Which evidence justified merge approval: The FR-02 implementation and all 16 tests being passed. Muthus review observations, and the Copilot comparison support the changes.
 
-- Human reviewer noticed before consulting Copilot: [response]
-- Copilot noticed: [response]
-- Overlap: [response]
-- What did the human reviewer notice that Copilot did not: [response]
-- What did Copilot identify that the human reviewer initially missed: [response]
-- Unsupported or incorrect Copilot suggestion: [response or none identified with explanation]
-- Human judgement accepted, modified or rejected, and why: [response]
-- Which evidence justified merge approval: [response]
+FR-03
+- Human reviewer noticed before consulting Copilot: Muthu reviewed the find_practitioner() use and identified that LookupError was used well for missing practitioners. He also said the testss were good for covering whitespace, Invalid, missing IDs
+- Copilot noticed: It found no issues. It identified two optional improvements: added the docstring and adding an assertion that unsuccessful lookups dont create records.
+- Overlap: Both reviews found appropriate error handling and test coverage for lookup
+- What did the human reviewer notice that Copilot did not: No issue was found that the Copilot missed. Both recognised good error handling and relevant test coverages.
+- What did Copilot identify that the human reviewer initially missed: It noticed a missing docstring and suggested adding testing for unsuccessful lookups.
+- Unsupported or incorrect Copilot suggestion: None, Both suggestions were aligned with Stage 6 requirements.
+- Human judgement accepted, modified or rejected, and why: Did both suggestions because they improve the documentation and coverage of tests without changing the required functionality.
+- Which evidence justified merge approval: All reviews found no issues occuring and all tests were passed.
+
+FR06/07
+- Human reviewer noticed before consulting Copilot: Muthu suggested including the appointment ID in the LookupError message to improve debugging. He laso asked whether cancellation should return a boolean or use and exception to distinguish unsuccessful cancellation from other appointment states.
+- Copilot noticed: It found no issues. It confirmed that the service uses Appointment.cancel(), returns original stored object and keeps cancelled appointments. It suggested adding docstring, removing whitespace and adding an assertion.
+- Overlap: Both reviews considered behaviour of cancellations, error handling and whether the implementation was clear
+- What did the human reviewer notice that Copilot did not: Suggested including the ID in the exception message to assist in debugging. He also raised potential issues with returning a boolean, which Copilot didnt see as a problem
+- What did Copilot identify that the human reviewer initially missed: Identified it was missing a docstring, had unnecessary whitespace and could use another assertion
+- Unsupported or incorrect Copilot suggestion: All suggestions were consistent with the Requirements
+- Human judgement accepted, modified or rejected, and why: Accepted two of the suggestions made by Copilot but let the method continue returing the original appointment object rather than a boolean as specified by the contract and also did not include ID in exception msg's
+- Which evidence justified merge approval: The implementation follows the cancellation rules, and all the tests pass correctly, no major issues were flagged by anyone meaning it should be good to merge
 
 ## J Contributions
 
