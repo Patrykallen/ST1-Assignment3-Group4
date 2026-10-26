@@ -30,6 +30,10 @@ class PatientService:
 
     
     def find_patient(self, patient_id: str) -> Patient:
+        """Return the original stored patient for a valid patient ID.
+
+        Raise ValueError for invalid IDs and LookupError if not found.
+        """
     
         patient = self.data_store.find_patient(patient_id)
 
