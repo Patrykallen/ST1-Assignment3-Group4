@@ -14,29 +14,29 @@ For each requirement, propose one positive test, one negative test and the key a
 
 | Requirement | Positive test | Negative test | Key assertion |
 |---|---|---|---|
-| FR-01 Register patient | [response] | [response] | [response] |
-| FR-05 Prevent practitioner conflict | [response] | [response] | [response] |
-| FR-06 Cancel appointment | [response] | [response] | [response] |
-| FR-07 Retain cancelled history | [response] | [response] | [response] |
+| FR-01 Register patient | Register a new patient with valid, unique required fields (ID and Name) using PatientService. | Attempt to register a new patient with an existing ID or blank white space. | assert data_store.patient('P001') is patient (This verifies if value error is raised with the negative test).  |
+| FR-05 Prevent practitioner conflict | Book two different practitioners as the same time or the same practitioner at  different times. | Attempt to book scheduled appointments for the same practitioner at the same date and time. | pytest.raises(ValueError) when the same practitioner is scheduled at same date and time. |
+| FR-06 Cancel appointment | Cancel a valid, currently scheduled appointment using ID. | Attempt to repeatedly cancel an already cancelled appointment or use an unknown ID| assert appointment_status == AppointmentStatus.cancelled (If an Unknown ID is entered or a appointment is canceled a ValueError or LookupError should be raised). |
+| FR-07 Retain cancelled history | Look up or query and appointment after it has been successfully cancelled. | Verify that a non-existent ID does not return historical data.  | assert data_store.find_patient('A001') is appointment while ensuring the appointment has been cancelled and not deleted completely.|
 
 ### Activity 2 Strong or weak assertion
 
 For each, select Strong for stated behaviour or Weak/unclear and explain why. State the behaviour and limits.
 
 `assert True`
-Judgement: [Strong for stated behaviour / Weak/unclear]  Why: [response]
+Judgement: Weak/unclear  Why: This statement evaluates if true is true (which it always is), this can create issues in the system and doesn't test the application at all. 
 
 `assert appointment is not None`
-Judgement: [Strong for stated behaviour / Weak/unclear]  Why: [response]
+Judgement: Weak/unclear  Why: This statement checks whether the appointment variable contains an object and isn't empty, this means it tells you nothing about the object that was returned, so if it returned a blank or wrong appointment object it will pass creating issues with the system. 
 
 `assert appointment.status == AppointmentStatus.CANCELLED`
-Judgement: [Strong for stated behaviour / Weak/unclear]  Why: [response]
+Judgement: Strong for stated behaviour  Why: It verifies if the status attribute of the Appointment object has successfully transitioned to CANCELLED and if it fails it remains Scheduled which ensures that the business logic actually works. 
 
 `assert len(results) > 0`
-Judgement: [Strong for stated behaviour / Weak/unclear]  Why: [response]
+Judgement: Weak/unclear  Why: This checks that the list named results has at least one item in it, but it fails to check whether or not the list contains the right data. 
 
 `assert data_store.find_appointment('A1') is appointment`
-Judgement: [Strong for stated behaviour / Weak/unclear]  Why: [response]
+Judgement: Strong for stated behaviour  Why: This checks whether the object returned by search the data store for 'A1' is the exact same in memory as your local appointment which proves that both the appointment is correct stored and that the correct records is being retrieved and stored. 
 
 ### Activity 3 Boundary thinking
 
