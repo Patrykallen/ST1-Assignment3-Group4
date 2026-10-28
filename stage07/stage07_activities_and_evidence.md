@@ -94,13 +94,10 @@ Assign TEST IDs before implementation or generation. Use canonical AC IDs with t
 |---|---|---|---|---|---|---|---|
 |FR-01|AC-01.1|Test-FR01-01| Positive service test |project/tests/test_services.py::test_register_valid_patient| Valid patient data with unique ID is saved in data store. |Passed| Student Authored |
 |FR-01|AC-01.2|Test-FRO1-02|Negative boundary test|project/tests/test_services.py::test_register_duplicate_patient_id|Attempting to register with an existing ID raises a ValueError|Passed|Student Authored|
-
 |FR-05|AC-04.1|Test-FR05-01|Negative conflict test|project/tests/test_services.py::test_book_appointment_practitioner_conflict|Booking the same practitioner at the exact same datetime raises a ValueError|Passed|Student Authored|
 |FR-05|AC-04.2|Test-FR05-02|Positive boundary test|project/tests/test_services.py::test_book_different_practitioner_same_time_allowed|Booking two different practitioners at the exact same time is permitted.|Passed|Student Authored|
-
 |FR-06|AC-05.1|Test-FR06-01|Postive state change|project/tests/test_services.py::test_cancel_scheduled_appointment|Calling cancel on a SCHEDULED appointment updates its status to CANCELLED.|Passed|Student Authored|
 |FR-06|AC-05.3|Test-FR06-02|Negative State test|project/tests/test_services.py::test_cancel_appointment_twice|Attempting to cancel an already cancelled appointment raises ValueError.|Passed|Student Authored|
-
 |FR-07|AC-05.2|Test-FR07-01|Positive history test|project/tests/test_services.py::test_cancel_scheduled_appointment|Cancelled appointments remain retrievable via lookup and listed in store history.|Passed|Student Authored|
 
 ## C Test Design
@@ -109,21 +106,13 @@ Use descriptive test names such as test_cancel_changes_status() or test_blank_pa
 
 | Test ID | Requirement | Acceptance criterion | Positive / Negative / Boundary | Test intention | Observable result expected | Added evidence beyond supplied tests |
 |---|---|---|---|---|---|---|
-
 | Test-DOM-01 | Domain Model (Patient) | AC-DOM-01 | Positive and Boundary | Verify valid patient construction and ID whitespace trimming. | Patient object successfully stores trimmed ID and correct name attributes. | Student Authored. |
-
 | Test-DOM-02 | Domain Model (Patient) | AC-DOM-02 | Negative | Blank patient ID rejected (Reference intention). | Raises ValueError upon construction with empty or whitespace-only IDs. | Preserved reference intention |
-
 | Test-DOM-03 | Domain Model (Practitioner) | AC-DOM-03 | Positive | Verify valid practitioner construction with required fields. | Practitioner object correctly retains ID, name, and specialty. | Student Authored |
-
 | Test-DOM-04 | Domain Model (Practitioner)| AC-DOM-04 | Negative | Blank Practitioner ID rejected. | Raises ValueError when initialized with a blank ID. | Student Authored |
-
 | Test-DOM-05 | Domain Model (Appointment)| AC-DOM-05 | Positive | A new appointment starts SCHEDULED (Reference intention) | Newly instantiated appointment defaults its status to AppointmentStatus.SCHEDULED. | Preserved reference intention|
-
 | Test-DOM-06 | Domain Model (Appointment) | AC-DOM-06 | Positive | Cancellation changes status (reference intention) | Calling .cancel() successfully updates the appointment status to AppointmentStatus.CANCELLED | Presevered reference intention |
-
 | Test-DOM-07 | Domain Model (Appointment) | AC-DOM-07 | Negative | Repeated cancellation is rejected (reference intention) | Raises ValueError when attempting to cancel an already cancelled appointment. | Preserved reference intention |
-
 |Test-DOM-08 | Domain Model (Appointment) | AC-DOM-08] | Negative | Guarded cancellation on completed appointments | Raises ValueError when trying to cancel an appointment initialized with COMPLETED status. | Student authored |
 
 
@@ -134,11 +123,8 @@ Arrange test data; act on one meaningful behaviour; assert the required observab
 | Test ID | Arrange | Act | Assert | Why meaningful / why assertion proves criterion |
 |---|---|---|---|---|
 | TEST-SRV-01 | Initialise a fresh SmartCareDataStore and AppointmentService. Capture the baseline appointment count (initial_count = len(store.list_appointments())). | Attempt to call appointment_service.book_appointment("A001", "NON_EXISTENT", "DR001", appointment_time) with an unregistered patient ID. | Catch the expected exception using with pytest.raises(LookupError): and verify that len(store.list_appointments()) == initial_count | Proves that failed service operations leave the data store in a secure, immutable state without creating partial or ghost records. |
-
 | TEST-SRV-02 |Register two patients (P001, P002) and one practitioner (DR001). Book a valid initial appointment (A001) at a specific datetime.|Attempt to book a second appointment (A002) for P002 with the exact same practitioner at the exact same datetime.|Use with pytest.raises(ValueError): to verify the duplication attempt is rejected.|Proves that the service strictly enforces practitioner availability constraints and prevents double-booking.|
-
 | TEST-SRV-03 |Register valid participants and successfully book a scheduled appointment (A001).|Invoke appointment_service.cancel_appointment("A001").|Assert that status updates to CANCELLED and that the appointment is still retained in session listings.|Proves that the cancellation workflow properly transitions operational states while preserving historical audit records.|
-
 
 ## E Domain Test Evidence
 
@@ -146,21 +132,13 @@ Cover Patient/Practitioner construction and validation; Appointment construction
 
 | Test ID | Behaviour | Test file/function | Result |
 |---|---|---|---|
-
 | Test-DOM-01 | Patient construction and trimming | project/tests/test_domain.py::test_patient_valid_construction_and_trimming | Passed
-
 | Test-DOM-02 | Patient Blank ID rejection | project/tests/test_domain.py::test_patient_blank_id_rejected | Passed |
-
 | Test-DOM-03 | Practitioner construction | project/tests/test_domain.py::test_practitioner_valid_construction | Passed |
-
 | Test-DOM-04 | Practitioner rejection | project/tests/test_domain.py::test_practitioner_blank_id_rejected | Passed] |
-
 | Test-DOM-05 | Appointment intial status | project/tests/test_domain.py::test_appointment_initial_status_scheduled | Passed] |
-
 | Test-DOM-06 | Appointment cancellation state change | project/tests/test_domain.py::test_appointment_cancellation_changes_status | Passed|
-
 | Test-DOM-07 | Appointment repeated cancellation guard | project/tests/test_domain.py::test_appointment_repeated_cancellation_rejected] | Passed |
-
 | Test-DOM-08 | Appointment completed cancellation guard | project/tests/test_domain.py::test_appointment_completed_cancellation_guar | Passedd |
 
 ## F Service Test Evidence
@@ -170,15 +148,10 @@ Use fresh shared SmartCareDataStore state, registered objects and completed Stag
 | Test ID | Behaviour | Requirement / criterion | Test file/function | Result |
 |---|---|---|---|---|
 | TEST-SRV-01 | Patient registration, ID lookup, whitespace trimming, case-sensitivity, and invalid ID rejections. | Patient Service & Input Validation | project/tests/test_services.py (test_register_*, test_find_patient_*) | Passed |
-
 | TEST-SRV-02 | Practitioner registration, ID lookup, whitespace trimming, case-sensitivity, and invalid ID rejections | Practitioner Service & Input Validation| project/tests/test_services.py (test_find_practitioner_*)| Passed |
-
 | TEST-SRV-03 | Valid appointment booking, practitioner time conflict prevention, and valid alternative slot allowance. | Booking and conflict rules | project/tests/test_services.py (test_book_appointment_practitoner_conflict, test_book_different_practitoner_same_time_allowed) | Passed |
-
 | TEST-SRV-04 | Failed service operations with unknown participants raise LookupError and leave data store state completely unchanged. | State immutability on failure | project/tests/test_services.py (test_unknown_participants_leave_state_unchanged) | Passed |
-
 | TEST-SRV-05 | Cancelling scheduled appointments updates status to CANCELLED and retains history for session lookup.| Cancellation and history workflow | project/tests/test_services.py (test_cancel_scheduled_appointment | Passed] |
-
 | TEST-SRV-06 | Cancellation guards reject repeated cancellations, completed appointments, unknown IDs, and invalid inputs. | Cancellation guards and error boundaries | project/tests/test_services.py (test_cancel_appointment_twice, test_cannot_cancel_completed_appointment, etc.) | Passed |
 
 ## G Negative and Boundary Cases
@@ -187,13 +160,9 @@ Connect cases to actual contracts and verify unchanged state after rejection.
 
 | Behaviour | Boundary/invalid input | Expected result | Test ID |
 |---|---|---|---|
-
 | Strict ID & Lookup Boundaries | Whitespace padding (" P001 "), case mismatch ("p001"), and invalid types (None, 123, "").| Whitespace is successfully trimmed to match valid records; case mismatches and invalid types raise ValueError or LookupError. | Prevents data from being lost during entity retrieval. |
-
 | Duplicate Entries | Attempting to register an existing patient ID ("P001") with new data. | Raises ValueError; original record remains completely untouched and is not overwritten.| Prevents accidental data loss or silent overwriting of existing user profiles in the data store. |
-
 | Practitioner Time Conflict | Booking two appointments with the exact same practitioner ("DR001") at the identical datetime(2026, 11, 15, 10, 0). | Raises ValueError; second booking is rejected and omitted from the data store. | Prevents double-booking medical professionals, which would cause clinical scheduling collisions and patient safety hazards.|
-
 | Cancellation Status Guards & Illegal Transitions | Attempting to cancel an appointment twice, cancel a COMPLETED appointment, or use invalid/unknown IDs. | Raises ValueError or LookupError; appointment status remains locked in its current state (CANCELLED or COMPLETED). | Prevents illegal state machine transitions, audit history corruption, and repeated cancellation processing errors. |
 
 
