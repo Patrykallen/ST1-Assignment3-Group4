@@ -171,31 +171,60 @@ Connect cases to actual contracts and verify unchanged state after rejection.
 
 Select ONE real acceptance criterion. Complete human-first fields before using Copilot. Do not require an accepted generated test.
 
-Requirement: [complete]
-Acceptance criterion: [quote]
-Behaviour to test: [complete]
-Human-first test idea/categories: [complete]
-Prompt and purpose: [complete or link]
+Requirement: The system must manage and schedule appointments between registered patient and practitioners without any booking collisions. 
+Acceptance criterion: AC-04.1 and AC-04.2 under FR-05: Same practitioner/exact time/SCHEDULED conflicts; another practitioner at the same time is allowed.
+Behaviour to test: Practitioner scheduling conflict prevention.  
+Human-first test idea/categories: 
+    - Valid case: Booking an appointment with an available practitioner. 
+    - Invalid case: Booking two appointmnts with the same practitioner at the exact same time. 
+    - Boundary case: Booking appointments at the exact same time with different practitioners should be allowed.
+Prompt and purpose: 
+
+Act as a software test-design assistant.
+Requirement: The system must manage and schedule appointments between registered patient and practitioners without any booking collisions. 
+Acceptance criterion: Same practitioner/exact time/SCHEDULED conflicts; another practitioner at the same time is allowed.
+Propose pytest test candidates covering a valid case, an invalid case and meaningful boundaries. For each candidate, state exactly which required behaviour it is intended to verify. Do not invent behaviour not stated in the requirement or criterion. Use observable outcomes rather than private implementation details. Use the current SmartCare public contracts and shared SmartCareDataStore. Do not introduce SQLite, repository abstractions or unrelated features. Do not claim that a proposed test has been executed.
+
 
 For each significant candidate, copy this entry as needed:
-- Copilot test idea/candidate: [complete]
-- What it claims to verify: [complete]
-- Requirement trace: [complete]
-- Assertion quality: [complete]
-- Human critique: [complete]
-- Decision: [Accept / Modify / Reject]
-- Reason: [complete]
-- Final test reference if accepted/modified: [link or not retained]
+- Copilot test idea/candidate: Test Candidate 1: Valid case - Different practitioner at the same time is allowed
+- What it claims to verify: The system allows two appointments at the exact same time when the practitioners are different.
+- Requirement trace: Practitioner schedule independence / core booking rules
+- Assertion quality: High
+- Human critique: Excellent alignment with core business logic
+- Decision: Accept
+- Reason: Directly matches implemented logice in test_services.py
+- Final test reference if accepted/modified: project/tests/test_services.py::test_book_different_practitoner_same_time_allowed
 - Actual verification result: [complete; do not claim an unrun test passed]
+
+- Copilot test idea/candidate: Test Candidate 2: Invalid case - Same practitioner, same time, existing SCHEDULED appointment
+- What it claims to verify: Exception handling when a scheduling overlap occurs.
+- Requirement trace: Practitioner schedule collision guard / core acceptance criterion.
+- Assertion quality: High
+- Human critique: Excellent alignment with core business logic. 
+- Decision: Accept
+- Reason: Directly matches implemented logic in test_services.py
+- Final test reference if accepted/modified: project/tests/test_services.py::test_book_appointment_practitioner_conflict
+- Actual verification result: Passed
+
+- Copilot test idea/candidate: Test Candidate 3: Boundary - Exact same timestamp match
+- What it claims to verify: Verify the "exact time" portion of the acceptance criterion.
+- Requirement trace: Practitioner schedule independence / core booking rules
+- Assertion quality: High
+- Human critique: Excellent alignment with core business logic
+- Decision: Accept
+- Reason: The collision rule is triggered only when the appointment time is exactly the same as an existing scheduled appointment which is already included in the logic.
+- Final test reference if accepted/modified: project/tests/test_services.py::test_book_appointment_practitoner_conflict
+- Actual verification result: Passed
 
 Before accepting: traces to a requirement/criterion; can fail for the right reason; assertion checks required behaviour; no invented business rule; no unnecessary private implementation dependence. Reject/modify weak assertions, invented requirements, excessive mocking, duplicates, wrong exceptions, obsolete architecture and unnecessary dependencies.
 
 ## I Weak Copilot Test Reflection
 
-Which Copilot-generated test looked convincing but was weak? [response]
-Why was it weak? [response]
-How did you strengthen it? [response]
-Accepted / modified / rejected test decisions and evidence: [link actual decisions in H]
+Which Copilot-generated test looked convincing but was weak? Test Candidate 3 ("Boundary - Exact same timestamp match").
+Why was it weak? Both candidate 2 and 3 suggested the same idea of raising a valueError when booking the same practitioner at the same time. 
+How did you strengthen it? We recognised the similarities between both candidate 2 and 3 and decided to create one test function. 
+Accepted / modified / rejected test decisions and evidence: project/tests/test_services.py::test_book_appointment_practitioner_conflict (documented under Candidate 2 and 3 decisions in Section H).
 
 ## J Regression Run
 
@@ -203,7 +232,7 @@ Run python -m pytest from project/. Retain all accumulated tests. Record the tes
 
 | Command | Working directory | Code SHA | Passed | Failed | Failure summary | Product defect / test defect / unresolved | Evidence and interpretation |
 |---|---|---|---|---|---|---|---|
-| [complete] | [complete] | [complete] | [complete] | [complete] | [complete] | [complete] | [complete] |
+| python -m pytest | project/ | 4169a4da3680e39d45ab039c60d88dba6994500a | 29 passed | 0 Failed | None] | N/A | All accumulated tests passed successfully, verifying appointment scheduling contracts, practitioner conflict guards, and patient registration. |
 
 Individual test runs and changed-order independence evidence: [commands, results, links]
 Optional tutor-led demonstration notes: [optional; leave blank if not used]
@@ -212,10 +241,10 @@ Requirement → test → failure/observation → diagnosis → change → verifi
 
 ## K What the Suite Still Does Not Prove
 
-What does your test suite still not prove? [response]
-Coverage if used: [result or not used]
-Which uncovered areas matter, and why does coverage percentage alone not establish correctness? [response]
-Optional fixtures/parametrisation used and why, if any: [response or not used]
+What does your test suite still not prove? This system currently registers patients, validates their details, ensure patient and practitioner ID exists and validates both practitoner and appointment bookings. However is still does not manage the system when traffic increases, for example to users booking appointments at the exact millisecond. 
+Coverage if used:  Not used
+Which uncovered areas matter, and why does coverage percentage alone not establish correctness? As complexity of the system increases beause of high traffics recovery paths help in stabilising production. 
+Optional fixtures/parametrisation used and why, if any: Not used
 
 ## L Git and Review Evidence
 
@@ -223,7 +252,7 @@ Use links rather than copying GitHub history. Continue the Stage 6 workflow; no 
 
 | Issue/task | Branch | PR | Reviewer | Key feedback | Outcome |
 |---|---|---|---|---|---|
-| [complete] | [complete] | [complete] | [complete] | [complete] | [complete] |
+| Implement appointment tests & peer review fixes | feature/appointment-tests | https://github.com/Patrykallen/ST1-Assignment3-Group4/pull/8] | Patryk | Suggested updating the conflict test ID to "A002" to avoid duplicate key errors and adding an unknown practitioner test. | Addressed feedback, pushed revisions, merged successfully into main. |
 
 ## M Contribution Evidence
 
@@ -231,45 +260,53 @@ Record actual work in test design, implementation, review, traceability, diagnos
 
 | Member | Actual contribution | Evidence link |
 |---|---|---|
-| [complete] | [complete] | [complete] |
-
+|Muthuraman | Added patient registration functionality, practitioner conflict validations and checked valid appointment times |https://github.com/Patrykallen/ST1-Assignment3-Group4/blob/main/stage07/stage07_activities_and_evidence.md|
+|Patryk|Reviwed code and gave feedback to change Appointment ID as it could lead to conflict and testing not only for unknown patientID but unknow practitioner ID too.|https://github.com/Patrykallen/ST1-Assignment3-Group4/pull/8|
 ## N Formative Questions
 
 1. What question does verification answer?
-[response]
+Verification ensures that the software correctly implements its specific requirements, design, and technical specifications.
+
 
 2. What question does validation answer?
-[response]
+Validation ensures that the software satisfies the user's actual needs, expectations, and intended real-world use cases.
+
 
 3. What is a unit test?
-[response]
+An automated test that isolates and verifies the smallest testable unit of source code (such as an individual function,method, or class.
 
 4. What is a pytest fixture?
-[response]
+A reusable function decorated with @pytest.fixture used to establish pre-conditions, mock data, or setup state that tests require before execution.
+
 
 5. What is parametrisation in pytest?
-[response]
+A feature (@pytest.mark.parametrize) that allows a single test function to run automatically multiple times using different sets of input parameters and expected outputs, eliminating code duplication.
+
 
 6. What is regression testing?
-[response]
+Re-running test suites after code changes, refactoring, or bug fixes to confirm that previously working functionality has not broken.
+
 
 7. What does code coverage tell us, and what does it not prove?
-[response]
+It tells us which lines, branches, or blocks of source code were executed during the test run.
+Does not prove that the code is bug-free, that the logic is correct, or that the assertions are rigorous (high coverage does not equal high test quality).
+
 
 8. What makes an assertion weak?
-[response]
+An assertion that is vague (e.g., checking only that a result is not None or just verifying truthiness) rather than checking exact expected values, types, and boundary contracts
 
 9. What is the appropriate role of GitHub Copilot as a test assistant?
-[response]
+To act as a co-pilot for suggesting boilerplate code, common test patterns, and edge cases, while the human engineer retains ultimate responsibility for critically reviewing, validating, and ensuring test correctness.
+
 
 10. What is the Stage 7 engineering rule?
-[response]
+Typically completes system-wide integration, full integrated test execution and final code tests. 
 
 ## O Stage Completion
 
-Tested Stage 7 main SHA: [complete]
-Full-suite result: [complete]
-Unresolved defects and effect on baseline: [complete or none]
-Clean working tree and integration evidence: [complete]
+Tested Stage 7 main SHA: 4169a4da3680e39d45ab039c60d88dba6994500a
+Full-suite result: 45 passed
+Unresolved defects and effect on baseline: None; all identified peer-review feedback and test logic issues have been successfully resolved, leaving the baseline fully functional and passing all tests.
+Clean working tree and integration evidence: Complete; feature branch merged into main, working tree is clean, and final commit SHA logged.
 Stage 8 handover status: [complete; no Stage 8 work assigned]
-All tutorial/formative responses and traceability/Copilot decisions complete: [confirm]
+All tutorial/formative responses and traceability/Copilot decisions complete: Confirm
