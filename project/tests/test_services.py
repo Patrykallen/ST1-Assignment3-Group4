@@ -182,6 +182,7 @@ def test_book_different_practitoner_same_time_allowed():
     assert apt1 in store.list_appointments()
     assert apt2 in store.list_appointments()
 
+
 # FR-06/FR-07: Appointment Cancellation Tests
 
 def test_cancel_scheduled_appointment():
@@ -237,7 +238,7 @@ def test_cancel_appointment_twice():
 
     assert appointment.status is AppointmentStatus.CANCELLED
     assert appointment_service.find_appointment("A001") is appointment
-    
+
 
 def test_unknown_participants_leave_state_unchanged():
     store = SmartCareDataStore()
