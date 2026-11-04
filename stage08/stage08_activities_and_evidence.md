@@ -223,7 +223,7 @@ FR-05, BR-05 AC-04.1 and AC-04.2
     gives Failed: DID NOT RAISE ValueError. The test also checks the store is unchanged after the rejection and that DR002 can be booked at that time.
 
 - Human hypothesis and intended checks: see E, F8-01.
-- Supported root cause and inspected code/runtime evidence: [complete after diagnosis]
+- Supported root cause and inspected code/runtime evidence:
 
 The practitioner comparison in SmartCareDataStore.has_practitioner_conflict() (smartcare/data_store.py, line 110) was `appointment.practitioner.practitioner_id != practitioner_id` instead of `==`, so a conflict was reported for a different practitioner at the same time and never for the same one. 
 
@@ -237,7 +237,7 @@ Changed one operator on that line: `!= practitioner_id` → `== practitioner_id`
 - Repair SHA / focused verification result:
 
 Repair SHA: ae2da34
-The three F8-01 focused tests from project/ went from 3 failed to 3 passed. The 3 failures are the F8-02 cancellation tests, not yet repaired.
+The three F8-01 focused tests from project/ went from 3 failed to 3 passed. Full suite: 44 passed, 3 failed, the 3 failures are the F8-02 cancellation tests, not yet repaired.
 
 ## D. F8-02 diagnosis and repair
 
@@ -272,9 +272,20 @@ FR-06, FR-07, FR-08, BR-06-7, AC-5.1, AC-5.2, AC-5.3 and AC-06.1.
     gives AssertionError: assert None is <Appointment>. The line before (appointment in store.list_appointments()) passes, so the appointment is still stored. The test also checks the service lookup and that a repeated cancel raises ValueError without changing anything.
 
 - Human hypothesis and intended checks: see E, F8-02.
-- Supported root cause and inspected code/runtime evidence: [complete after diagnosis]
-- Smallest justified fix / diff / why other behaviour is preserved: [complete]
-- Repair SHA / focused verification result: [complete]
+- Supported root cause and inspected code/runtime evidence: 
+
+SmartCareDataStore.find_appointment() had an extra condition `and appointment.status.value != "cancelled"`, so a cancelled appointment that was still stored was never returned. 
+
+Evidence: after cancelling A001 it was still in store.list_appointments() (count unchanged at 1) but store.find_appointment('A001') returned None; git diff b50010b e356c85 shows the status filter was added by the preparation commit, and the Stage 7 version looked up by ID only. This also caused the second cancel to raise LookupError before Appointment.cancel() could raise its ValueError. See F8-02 in F.
+
+
+- Smallest justified fix / diff / why other behaviour is preserved: 
+
+Removed only the status filter, so the condition is now `if appointment.appointment_id == appointment_id.strip():`. The blank/invalid ID ValueError check, the `return None` for a valid unknown ID, the service LookupError, and Appointment.cancel()'s guard are unchanged. Cancelled appointments are still kept and still don't block bookings, because has_practitioner_conflict() only counts SCHEDULED appointments. The full suite was run to check nothing else changed.
+
+- Repair SHA / focused verification result: 
+Repair SHA: aca16a3
+The three F8-02 focused tests from project/ went from 3 failed to 3 passed with the Full suite: 47 passed, 0 failed.
 
 ## E. Human-first hypotheses
 
@@ -412,12 +423,26 @@ The root cause is the extra (appointment.status.value != "cancelled") condition 
 |---|---|---|---|
 | F8-01 before repair | 9a4970c | python -m pytest tests/test_regressions.py::test_f8_01_same_practitioner_same_time_conflicts_other_allowed tests/test_starter.py::test_conflict_rule_and_different_practitioner tests/test_services.py::test_book_different_practitoner_same_time_allowed` from project/ | 3 failed: test_f8_01 (line 36) and test_conflict_rule_and_different_practitioner (line 127) – Failed: DID NOT RAISE ValueError; test_book_different_practitoner_same_time_allowed (line 180) – ValueError: Practitioner already has a SCHEDULED appointment at this time |
 | F8-01 after repair | ae2da34 | python -m pytest tests/test_regressions.py::test_f8_01_same_practitioner_same_time_conflicts_other_allowed tests/test_starter.py::test_conflict_rule_and_different_practitioner tests/test_services.py::test_book_different_practitoner_same_time_allowed` from project/ | Focused: 3 passed. Full suite: 3 failed, 44 passed (remaining failures are F8-02: test_f8_02_cancelled_appointment_is_retained_and_found, test_cancel_scheduled_appointment, test_cancel_appointment_twice) |
-| F8-02 before repair | [complete] | [complete] | [complete] |
-| F8-02 after repair | [complete] | [complete] | [complete] |
-| Full suite after both repairs, before refactor | [complete] | [complete] | [complete] |
+| F8-02 before repair | ae2da34 | python -m pytest from project/ | 3 failed, 44 passed. F8-02 failures: test_f8_02_cancelled_appointment_is_retained_and_found (line 60) – AssertionError: assert None is <Appointment>; test_cancel_scheduled_appointment (line 211) – LookupError: Appointment not found (services.py:141); test_cancel_appointment_twice (line 237) – LookupError: Appointment not found (services.py:154) |
+| F8-02 after repair | aca16a3 | python -m pytest tests/test_regressions.py::test_f8_02_cancelled_appointment_is_retained_and_found tests/test_services.py::test_cancel_scheduled_appointment tests/test_services.py::test_cancel_appointment_twice from project/ | 3 passed |
+| Full suite after both repairs, before refactor | aca16a3 | python -m pytest from project/ | 47 passed, 0 failed (Python 3.14.3, pytest 9.2.0) |
 
-Explain how the assertions detect each relevant incorrect result and protect previous behaviour: [complete]
-Unrelated failures investigated / resolution: [complete or not applicable with reason]
+Explain how the assertions detect each relevant incorrect result and protect previous behaviour:
+
+F8-01: 
+test_f8_01 uses pytest.raises(ValueError) for the same practitioner at the same time, so it fails if a double booking is accepted, and checks store.
+list_appointments() == [first] and find_appointment('A002') is None so a rejected booking can't leave a partial record. 
+It then books DR002 at the same time and checks the result is a SCHEDULED appointment for DR002, so it also fails if a different practitioner is wrongly rejected (AC-04.2). 
+The existing test_starter and test_services conflict tests keep the original positive/negative intentions.
+
+F8-02: 
+test_f8_02 checks the cancel returns the same object with CANCELLED status, that it is still in list_appointments(), and that both store.find_appointment() and the service find_appointment() return it, so it fails if cancelled appointments are hidden or deleted. 
+It then checks a second cancel raises ValueError and the status and store are unchanged, protecting AC-05.3. 
+All earlier tests were kept and still pass, so previous behaviour is protected.
+
+
+Unrelated failures investigated / resolution:
+Not applicable as after both repairs the full suit has no failures, and before the repairs every failure was one of the F8-01 or F8-02 tests.
 
 ## H. Refactoring decision and before/after verification
 
