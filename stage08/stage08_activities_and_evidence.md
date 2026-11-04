@@ -87,8 +87,7 @@ Classifications:
 |Extract a repeated conflict | Refactoring | Same logic just moved to one place |
 | Add rescheduling | Feature | New behaviour |
 | Restore retained cancellation lookup | Repair | Fixes behaviour that breaks FR-07 |
-| Replace a magic status sting with the existing enum 
- Refactoring | As long as the compartison give the same result |
+| Replace a magic status sting with the existing enum Refactoring | As long as the compartison give the same result |
 
 Unchanged behaviours:
 The same exception types:
@@ -112,7 +111,7 @@ Supporting requirement: FR-07 retain calcelled history and FR-06 cancel appointm
 Ranked plausible causes:
     1. SmartCareDataStore.find_appointment() skips or filters out cancelled appointments.
         Best fit: cancel_appointment() found A001 when it was CHEDULED, but the same lookup fails after it became CNACELLED, so the results seem to depend on the status.
-        Check: After cancelling, checking if A001 is still in store.list_appointments(). If it's not there but find_appointment returns None, the lookup is hiding it.
+        Check: After cancelling, checking if A001 is still in store.list_appointments(). If it's still there but find_appointment returns None, the lookup is hiding it.
     2. Cancellation removes the appointment from the store.
         Average fit: The store has no public delete method and the test still has the appointment object.
         Check: Compare len(store.list_appointments()) before and after cancelling and look though cancel_appointments() and Appointmend.cancel().
@@ -196,39 +195,6 @@ python -m pytest from project/ at e356c85 – 4 failed, 41 passed:
 
 ## C. F8-01 diagnosis and repair
 
-- Symptom / observed behaviour: 
-After a SCHEDULED appointment is cancelled its status becomes CANCELLED which is correct. However the appointment is no longer able to be found by its ID. Lookup raises LoopupError: Appointment not found. Trying to cancel the same appointment a second time also raises LookupError instead of being rejected as an illegal transition.
-
-- Expected behaviour and requirement: 
-The same appointment object stays in the store with the CANCELLED status and is still able to be returned by lookup, and cancelling it again raises ValueError. This comes from the requirements:
-FR-06-08, BR-06-7, AC-5.1-5.3 and AC-06.1
-
-- Minimal synthetic reproduction steps: 
-1. Create a new SmartCareDataStore with the 3 services
-2. Register patient P001 "test patient" and practitioner DR001 "test doctor", "general practice".
-3. Book A001 for P001/D001 at 2026-11-10 10:00
-4. Call cancel_appointment("A001").
-5. Call find_appointment("A001"), it should raise a LookupError, where the A001 object was expected.
-6. Call cancel_appointment("A001"), again and iss if it raises a LookupError where ValueError was expected.
-
-- Meaningful failing test path/name and exact relevant failure: 
-1.  tests/test_services.py::test_cancel_scheduled_appointment: line 211, 
-    assert appointment_service.find_appointment("A001") is appointment,
-    gives LookupError: Appointment not found, 
-    raised at smartcare/services.py:141.
-
-2. tests/test_services.py::test_cancel_appointment_twice: line 237, 
-    the second cancel_appointment("A001") inside pytest.raises(ValueError), 
-    gives LookupError: Appointment not found, 
-    raised at smartcare/services.py:154.
-
-- Human hypothesis and intended checks: see E, F8-01.
-- Supported root cause and inspected code/runtime evidence: [complete after diagnosis]
-- Smallest justified fix / diff / why other behaviour is preserved: [complete]
-- Repair SHA / focused verification result: [complete]
-
-## D. F8-02 diagnosis and repair
-
 - Symptom / observed behaviour:
 The practitioner conflict rule is working backwards. Booking a different practitioner at the same time as an existing appointment is rejected with "ValueError: Practitioner already has a SCHEDULED appointment at this time", while booking the same practitioner twice at the same time is accepted.
 
@@ -251,6 +217,47 @@ FR-05, BR-05 AC-04.1 and AC-04.2
 2.  tests/test_starter.py::test_conflict_rule_and_different_practitioner: line 127, 
     with pytest.raises(ValueError) around booking A2 with the same practitioner D1 at the same time, 
     gives Failed: DID NOT RAISE ValueError. This breaks AC-04.1.
+
+3.  tests/test_regressions.py::test_f8_01_same_practitioner_same_time_conflicts_other_allowed (new focused regression test): line 36,
+    with pytest.raises(ValueError) around booking A002 for P002 with the same practitioner DR001 at the same time,
+    gives Failed: DID NOT RAISE ValueError. The test also checks the store is unchanged after the rejection and that DR002 can be booked at that time.
+
+- Human hypothesis and intended checks: see E, F8-01.
+- Supported root cause and inspected code/runtime evidence: [complete after diagnosis]
+- Smallest justified fix / diff / why other behaviour is preserved: [complete]
+- Repair SHA / focused verification result: [complete]
+
+## D. F8-02 diagnosis and repair
+
+- Symptom / observed behaviour: 
+After a SCHEDULED appointment is cancelled its status becomes CANCELLED which is correct. However the appointment is no longer able to be found by its ID. Lookup raises LoopupError: Appointment not found. Trying to cancel the same appointment a second time also raises LookupError instead of being rejected as an illegal transition.
+
+- Expected behaviour and requirement: 
+The same appointment object stays in the store with the CANCELLED status and is still able to be returned by lookup, and cancelling it again raises ValueError. This comes from the requirements:
+FR-06, FR-07, FR-08, BR-06-7, AC-5.1, AC-5.2, AC-5.3 and AC-06.1.
+
+- Minimal synthetic reproduction steps: 
+1. Create a new SmartCareDataStore with the 3 services
+2. Register patient P001 "test patient" and practitioner DR001 "test doctor", "general practice".
+3. Book A001 for P001/D001 at 2026-11-10 10:00
+4. Call cancel_appointment("A001").
+5. Call find_appointment("A001"), it should raise a LookupError, where the A001 object was expected.
+6. Call cancel_appointment("A001"), again and iss if it raises a LookupError where ValueError was expected.
+
+- Meaningful failing test path/name and exact relevant failure: 
+1.  tests/test_services.py::test_cancel_scheduled_appointment: line 211, 
+    assert appointment_service.find_appointment("A001") is appointment,
+    gives LookupError: Appointment not found, 
+    raised at smartcare/services.py:141.
+
+2. tests/test_services.py::test_cancel_appointment_twice: line 237, 
+    the second cancel_appointment("A001") inside pytest.raises(ValueError), 
+    gives LookupError: Appointment not found, 
+    raised at smartcare/services.py:154.
+
+3.  tests/test_regressions.py::test_f8_02_cancelled_appointment_is_retained_and_found (new focused regression test): line 60,
+    assert store.find_appointment('A001') is appointment,
+    gives AssertionError: assert None is <Appointment>. The line before (appointment in store.list_appointments()) passes, so the appointment is still stored. The test also checks the service lookup and that a repeated cancel raises ValueError without changing anything.
 
 - Human hypothesis and intended checks: see E, F8-02.
 - Supported root cause and inspected code/runtime evidence: [complete after diagnosis]
@@ -292,7 +299,7 @@ Appointment.cancel()
 
 Competinf explanation: Cancellation removes the appointment from the stores dictionary.
 
-Discriminating check: After cancelling check whether A001 is still in store.list_appointments() and if the count had been changed. If it's still listed but find_appointment() returns None the lookup is hiding it. If its done something must be deleting it.
+Discriminating check: After cancelling check whether A001 is still in store.list_appointments() and if the count had been changed. If it's still listed but find_appointment() returns None the lookup is hiding it. If its gone something must be deleting it.
 
 Member and saved sequence/time or commit showing this preceded consultation: 
 Jack Gerbich, last commit was: 6f25ee3 (“Completed Stage 8 Parts A and B”, 2026-11-04). The next commit will include sections C, D and E as a time stamp before consultation.
