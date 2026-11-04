@@ -446,10 +446,18 @@ Not applicable as after both repairs the full suit has no failures, and before t
 
 ## H. Refactoring decision and before/after verification
 
-Smell and exact location: [complete]
-Small proposed structural change / why justified: [complete before editing]
-External behaviour to preserve / relevant tests: [complete]
+Smell and exact location:
+The magic status string in SmartCareDataStore.has_practitioner_conflict() (project/smartcare/data_store.py, line 111). The line `appointment.status.value == "scheduled"` compares against a hard coded string instead of using the existing AppointmentStatus enum.
+
+Small proposed structural change / why justified: 
+Replace it with `appointment.status is AppointmentStatus.SCHEDULED`. The enum is already imported in data_store.py so this is a one line change with no new dependencies. It removes a hard coded string that could break without any error if it was mistyped and matches how domain.py and the Stage 7 version compare status.
+Before editing, one regression test will be added to check that a cancelled appointment does not block the same practitioner's time slot, because none of the existing tests check the status part of this condition.
+
+External behaviour to preserve / relevant tests:
+Only another SCHEDULED appointment for the same practitioner at exactly the same time sould conflict (FR-05, BR-05, AC-04.1, AC-04.2). Cancelled appointments stay stored and do not block that time slot with the practitioner. When a conflict is raised its a ValueError and a rejected booking leaves the store unchanged.
+Relevant tests: tests/test_regressions.py (all three tests), tests/test_services.py::test_book_appointment_practitoner_conflict, tests/test_services.py::test_book_different_practitoner_same_time_allowed, tests/test_starter.py::test_conflict_rule_and_different_practitioner, and the full suite.
 Before result: see G, full passing suite.
+
 Actual change / diff / separate refactor SHA: [complete]
 Focused and full after-refactor commands / working directory / results / evidence: [complete]
 Result — accepted, revised or rejected / reason / behaviour-preservation conclusion: [complete]
