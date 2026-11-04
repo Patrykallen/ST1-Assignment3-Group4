@@ -87,7 +87,7 @@ Classifications:
 |Extract a repeated conflict | Refactoring | Same logic just moved to one place |
 | Add rescheduling | Feature | New behaviour |
 | Restore retained cancellation lookup | Repair | Fixes behaviour that breaks FR-07 |
-| Replace a magic status sting with the existing enum Refactoring | As long as the compartison give the same result |
+| Replace a magic status sting with the existing enum | Refactoring | As long as the compartison give the same result |
 
 Unchanged behaviours:
 The same exception types:
@@ -205,7 +205,7 @@ FR-05, BR-05 AC-04.1 and AC-04.2
 - Minimal synthetic reproduction steps: 
 1. Create a new SmartCareDataStore and three services.
 2. Register patient P001 and practioners DR001 and DR002.
-3. Book A001 for Poo01/DR001 at 2026-11-10 10:00
+3. Book A001 for P001/DR001 at 2026-11-10 10:00
 4. Book A002 for P001/DR002 at the same time, it raises ValueError where a successful booking was expected.
 5. Book A003 for P001/DR001 at the same time, it gets booked where ValueError was expected.
 
@@ -239,7 +239,7 @@ FR-06, FR-07, FR-08, BR-06-7, AC-5.1, AC-5.2, AC-5.3 and AC-06.1.
 - Minimal synthetic reproduction steps: 
 1. Create a new SmartCareDataStore with the 3 services
 2. Register patient P001 "test patient" and practitioner DR001 "test doctor", "general practice".
-3. Book A001 for P001/D001 at 2026-11-10 10:00
+3. Book A001 for P001/DR001 at 2026-11-10 10:00
 4. Call cancel_appointment("A001").
 5. Call find_appointment("A001"), it should raise a LookupError, where the A001 object was expected.
 6. Call cancel_appointment("A001"), again and iss if it raises a LookupError where ValueError was expected.
@@ -310,18 +310,89 @@ Commit after sections C, D and E were completed but before consultation: debug/s
 Use the full handout prompt separately for BOTH defects, after E. Keep each actual prompt or accessible reference; include observed behaviour, expected behaviour, reproduction, failing test, human hypothesis, relevant code, three ranked causes and discriminating checks, with the no-rewrite/no-invented-requirements constraints.
 
 ### F8-01 Copilot review
-Actual prompt / output reference and member: [complete]
-1. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason: [complete]
-2. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason: [complete]
-3. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason: [complete]
-Final human conclusion and comparison with initial hypothesis: [complete]
+Actual prompt / output reference and member:
+
+The actual prompt and outputs can be found in the stage08 folder in the copilot_F8-01.md file
+Member: Jack Gerbich
+Tool used: Microsoft Copilot GPT 5.6 SOL (Web version) 5/11/2026
+
+1. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason: 
+
+Suggestion: Inverted practitioner comparison in has_practitioner_conflict() (`!=` instead of `==`) explains both failures at once.
+
+Evidence check: After booking A001 with DR001 at 2026-11-10 10:00 called store.has_practitioner_conflict() directly with 'DR001' and 'DR002', and compared the line with the Stage 7 version
+
+Observed evidence: has_practitioner_conflict('DR001', t) returned False and ('DR002', t) returned True, the reverse of BR-05/AC-04.1/AC-04.2. Stage 7 used `==`; afterwards changed it to `!=`.
+
+Correct and accept, matches the evidence and my hypothesis in E. Will confirm by changing only this operator and re-running the focused tests.
+
+2. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason:
+
+Suggestion: The conflict rule was written with reversed business logic on purpose because the developer misread the requirement.
+
+Evidence check: Checked the Stage 7 code and git history for has_practitioner_conflict().
+
+Observed evidence: At b50010b the condition used `==` and the docstring said "Check for another SCHEDULED appointment at this practitioner/time". Which matches FR-05. The `!=` only appears in e356c85 ("prepare debugg stage08"), made by the Stage 8 preparation tool. No comments, notes or reviews show anyone meant different practitioners to conflict.
+
+Partly correct, it describes the same faulty condition as suggestion 1, but its explanation of why it happened is wrong, reject.
+
+
+3. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason:
+
+Suggestion: Practitioner IDs are mixed up somewhere else (wrong lookup or stored practitioner), so the comparison only looks reversed.
+
+Evidence check: Printed each stored appointment's ID and practitioner ID then called has_practitioner_conflict() directly with known IDs, skipping the service.
+
+Observed evidence: A001 was stored with DR001 as expected. Calling the store method directly with the correct IDs still gave reversed results, so the fault is inside the method not in the data passed to it.
+
+Wrong and reject, the IDs are correct before the comparison runs.
+
+Final human conclusion and comparison with initial hypothesis:
+The root cause is the inverted practitioner comparison in SmartCareDataStore.has_practitioner_conflict() (`!=` instead of `==`). This matches my initial hypothesis in part E. The direct store check also ruled out my competing explanation the service passing the wrong ID, and Copilot's third suggestion. Copilot's second suggestion described the same faulty line but gave an unsupported reason for it, which the git history disproved.
 
 ### F8-02 Copilot review
-Actual prompt / output reference and member: [complete]
-1. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason: [complete]
-2. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason: [complete]
-3. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason: [complete]
-Final human conclusion and comparison with initial hypothesis: [complete]
+Actual prompt / output reference and member: 
+
+The actual prompt and outputs can be found in the stage08 folder in the copilot_F8-02.md file
+Member: Jack Gerbich
+Tool used: Microsoft Copilot GPT 5.6 SOL (Web version) 5/11/2026
+
+1. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason: 
+
+Suggestion: SmartCareDataStore.find_appointment() excludes CANCELLED appointments because of the `appointment.status.value != "cancelled"` condition, so the appointment stays stored but can't be found.
+
+Evidence check: Booked A001, checked store.find_appointment('A001') and len(store.list_appointments()) before and after cancelling, and compared find_appointment() with the Stage 7 version.
+
+Observed evidence: Before cancelling, the store lookup returned A001 (count 1). After cancelling, A001 was still in list_appointments() (count still 1, status cancelled) but store.find_appointment('A001') returned None. Stage 7's find_appointment() had no status filter.
+
+Correct and accept, matches the evidence and my hypothesis in E. Will confirm by removing only the status filter and re-running the focused tests.
+
+
+2. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason:
+
+Suggestion: The lookup was written with an incorrect business rule that treats cancelled appointments as deleted (a requirement misunderstanding rather than a coding mistake).
+   
+Evidence check: Checked the Stage 7 code and git history for find_appointment(), and the requirements.
+
+Observed evidence: In the stage 7 code find_appointment() returned the stored appointment by ID with no status check. So the filter only appears after stage 7 but before the begining of stage 8 made by the Stage 8 preparation tool. FR-07 and AC-05.2 clearly require cancelled history to stay retrievable, and no comments or notes suggest hiding cancelled appointments.
+
+Partly correct, it identifies the same faulty condition as suggestion 1, but its explanation of why it is there is not supported rejected.
+
+
+3. Ranked suggestion / evidence check / observed evidence / correct, partly correct or wrong / accept, modify or reject with reason:
+
+Suggestion: Cancellation is part of a wider soft-delete pattern where cancelled appointments are hidden across the application.
+
+Evidence check: Searched all smartcare modules for "cancelled" and checked list_appointments() and Appointment.cancel().
+
+Observed evidence: The only status filter on "cancelled" is in find_appointment() (data_store.py line 94). list_appointments() returns all appointments, and Appointment.cancel() is documented as "Cancel a SCHEDULED appointment without deleting it". has_practitioner_conflict() only counts SCHEDULED appointments, which is correct under BR-05, not a hiding pattern.
+
+Wrong and reject, the filter exists in one place only, so the problem is localised.
+
+
+Final human conclusion and comparison with initial hypothesis:
+
+The root cause is the extra (appointment.status.value != "cancelled") condition in SmartCareDataStore.find_appointment(), which hides cancelled appointments that are still stored. This also explains why the second cancel raises LookupError instead of reaching Appointment.cancel()'s ValueError guard. This matches my initial hypothesis in E and the check showed the competing explanation which was cancellation deleting the appointment, was wrong because the appointment stayed in list_appointments(). Copilot's second and third suggestions were not supported by the previous stages before they were changed or the code search.
 
 ## G. Failing to passing regression evidence
 
