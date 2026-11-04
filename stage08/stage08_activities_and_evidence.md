@@ -196,10 +196,32 @@ python -m pytest from project/ at e356c85 – 4 failed, 41 passed:
 
 ## C. F8-01 diagnosis and repair
 
-- Symptom / observed behaviour: [complete]
-- Expected behaviour and requirement: [complete]
-- Minimal synthetic reproduction steps: [complete]
-- Meaningful failing test path/name and exact relevant failure: [complete]
+- Symptom / observed behaviour: 
+After a SCHEDULED appointment is cancelled its status becomes CANCELLED which is correct. However the appointment is no longer able to be found by its ID. Lookup raises LoopupError: Appointment not found. Trying to cancel the same appointment a second time also raises LookupError instead of being rejected as an illegal transition.
+
+- Expected behaviour and requirement: 
+The same appointment object stays in the store with the CANCELLED status and is still able to be returned by lookup, and cancelling it again raises ValueError. This comes from the requirements:
+FR-06-08, BR-06-7, AC-5.1-5.3 and AC-06.1
+
+- Minimal synthetic reproduction steps: 
+1. Create a new SmartCareDataStore with the 3 services
+2. Register patient P001 "test patient" and practitioner DR001 "test doctor", "general practice".
+3. Book A001 for P001/D001 at 2026-11-10 10:00
+4. Call cancel_appointment("A001").
+5. Call find_appointment("A001"), it should raise a LookupError, where the A001 object was expected.
+6. Call cancel_appointment("A001"), again and iss if it raises a LookupError where ValueError was expected.
+
+- Meaningful failing test path/name and exact relevant failure: 
+1.  tests/test_services.py::test_cancel_scheduled_appointment: line 211, 
+    assert appointment_service.find_appointment("A001") is appointment,
+    gives LookupError: Appointment not found, 
+    raised at smartcare/services.py:141.
+
+2. tests/test_services.py::test_cancel_appointment_twice: line 237, 
+    the second cancel_appointment("A001") inside pytest.raises(ValueError), 
+    gives LookupError: Appointment not found, 
+    raised at smartcare/services.py:154.
+
 - Human hypothesis and intended checks: see E, F8-01.
 - Supported root cause and inspected code/runtime evidence: [complete after diagnosis]
 - Smallest justified fix / diff / why other behaviour is preserved: [complete]
@@ -207,10 +229,29 @@ python -m pytest from project/ at e356c85 – 4 failed, 41 passed:
 
 ## D. F8-02 diagnosis and repair
 
-- Symptom / observed behaviour: [complete]
-- Expected behaviour and requirement: [complete]
-- Minimal synthetic reproduction steps: [complete]
-- Meaningful failing test path/name and exact relevant failure: [complete]
+- Symptom / observed behaviour:
+The practitioner conflict rule is working backwards. Booking a different practitioner at the same time as an existing appointment is rejected with "ValueError: Practitioner already has a SCHEDULED appointment at this time", while booking the same practitioner twice at the same time is accepted.
+
+- Expected behaviour and requirement:
+Only another SCHEDULED appointment booking for the same practitioner at exactly the same date and time should be rejected with ValueError. A different practitioner at that same date and time is allowed, this comes from:
+FR-05, BR-05 AC-04.1 and AC-04.2
+
+- Minimal synthetic reproduction steps: 
+1. Create a new SmartCareDataStore and three services.
+2. Register patient P001 and practioners DR001 and DR002.
+3. Book A001 for Poo01/DR001 at 2026-11-10 10:00
+4. Book A002 for P001/DR002 at the same time, it raises ValueError where a successful booking was expected.
+5. Book A003 for P001/DR001 at the same time, it gets booked where ValueError was expected.
+
+- Meaningful failing test path/name and exact relevant failure: 
+1.  tests/test_services.py::test_book_different_practitoner_same_time_allowed: line 180, 
+    booking A002 with DR002, gives ValueError: Practitioner already has a SCHEDULED appointment at this time, 
+    raised at smartcare/services.py:127. This breaks AC-04.2.
+
+2.  tests/test_starter.py::test_conflict_rule_and_different_practitioner: line 127, 
+    with pytest.raises(ValueError) around booking A2 with the same practitioner D1 at the same time, 
+    gives Failed: DID NOT RAISE ValueError. This breaks AC-04.1.
+
 - Human hypothesis and intended checks: see E, F8-02.
 - Supported root cause and inspected code/runtime evidence: [complete after diagnosis]
 - Smallest justified fix / diff / why other behaviour is preserved: [complete]
@@ -221,14 +262,39 @@ python -m pytest from project/ at e356c85 – 4 failed, 41 passed:
 Complete both entries BEFORE Copilot. C/D supply observed/expected/reproduction/test; retain those initial facts and link them here.
 
 ### F8-01 human entry
-Likely cause and why plausible: [complete]
-Evidence intended to inspect / competing explanation / discriminating check: [complete]
-Member and saved sequence/time or commit showing this preceded consultation: [complete]
+Likely cause and why plausible: 
+SmartCareDataStore.find_appointment() is skipping over cancelled appointments. The same A001 lookup works while the appointment is SCHEDULED as cancel_appointment finds it, but fails afterwards once the appointment becomes CANCELLED. So the result depends on the status not the ID as both tests fail looking up the ID after its canceled.
+
+Evidence intended to inspect / competing explanation / discriminating check:
+Evidence: 
+SmartCareDataStore.find_appointment(), 
+the prepared diff git diff b50010b e356c85,
+AppointmentService.cancel_appointment(),
+Appointment.cancel()
+
+Competinf explanation: Cancellation removes the appointment from the stores dictionary.
+
+Discriminating check: After cancelling check whether A001 is still in store.list_appointments() and if the count had been changed. If it's still listed but find_appointment() returns None the lookup is hiding it. If its done something must be deleting it.
+
+Member and saved sequence/time or commit showing this preceded consultation: 
+Jack Gerbich, last commit was: 6f25ee3 (“Completed Stage 8 Parts A and B”, 2026-11-04). The next commit will include sections C, D and E as a time stamp before consultation.
 
 ### F8-02 human entry
-Likely cause and why plausible: [complete]
-Evidence intended to inspect / competing explanation / discriminating check: [complete]
-Member and saved sequence/time or commit showing this preceded consultation: [complete]
+Likely cause and why plausible:
+SmartCareDataStore.has_practitioner_conflict(), checks to see if the practitioner already has an appointment, however it looks like the practitioner ID might be flipped around as. It checks if the practitioner ID matches a different practitioner instead of the same one. The rule fails in two ways as the same practitioner is allowed and a different practitioner is rejected. A missing or broken check should only cause one of those issues but one that been flipped around explains both.
+
+Evidence intended to inspect / competing explanation / discriminating check: 
+Evidence: has_practitioner_conflict() in smartcare/data_store.py, 
+the prepared diff, and the call in AppointmentService.book_appointment().
+
+Competing explanation: book_appointment() gives the wrong ID or datetime to the conflict check.
+
+Discriminating check: After booking A001 with DR001, call store.has_practitioner_conflict('DR001', time) and store.has_practitioner_conflict('DR002', time). 
+If they return False and True (flipped) the fault is in the store method.
+If they return True and False (The right way around) the fault is in how the service calls it.
+
+Member and saved sequence/time or commit showing this preceded consultation: 
+Jack Gerbich, last commit was: 6f25ee3 (“Completed Stage 8 Parts A and B”, 2026-11-04). The next commit will include sections C, D and E as a time stamp before consultation.
 
 ## F. GitHub Copilot prompts, findings and human decisions
 
