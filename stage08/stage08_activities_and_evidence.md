@@ -456,11 +456,23 @@ Before editing, one regression test will be added to check that a cancelled appo
 External behaviour to preserve / relevant tests:
 Only another SCHEDULED appointment for the same practitioner at exactly the same time sould conflict (FR-05, BR-05, AC-04.1, AC-04.2). Cancelled appointments stay stored and do not block that time slot with the practitioner. When a conflict is raised its a ValueError and a rejected booking leaves the store unchanged.
 Relevant tests: tests/test_regressions.py (all three tests), tests/test_services.py::test_book_appointment_practitoner_conflict, tests/test_services.py::test_book_different_practitoner_same_time_allowed, tests/test_starter.py::test_conflict_rule_and_different_practitioner, and the full suite.
-Before result: see G, full passing suite.
 
-Actual change / diff / separate refactor SHA: [complete]
-Focused and full after-refactor commands / working directory / results / evidence: [complete]
-Result — accepted, revised or rejected / reason / behaviour-preservation conclusion: [complete]
+Before result:
+
+The full suite at aca16a3 which is after both repairs: 47 passed (see G). After adding test_cancelled_appointment_does_not_block_same_practitioner_slot at 2a6e577: python -m pytest from project/ – 48 passed, 0 failed.
+
+Actual change / diff / separate refactor SHA: 
+
+One line in has_practitioner_conflict() (data_store.py line 111): `appointment.status.value == "scheduled"` was changed to `appointment.status is AppointmentStatus.SCHEDULED`. Refactor SHA: 86b1bc4. No other code was changed.
+
+Focused and full after-refactor commands / working directory / results / evidence: 
+
+Focused (from project/): python -m pytest tests/test_regressions.py tests/test_starter.py::test_conflict_rule_and_different_practitioner tests/test_services.py::test_book_appointment_practitoner_conflict tests/test_services.py::test_book_different_practitoner_same_time_allowed – 6 passed.
+Full (from project/): python -m pytest – 48 passed, 0 failed. Same result as before the refactor at 2a6e577.
+
+Result — accepted, revised or rejected / reason / behaviour-preservation conclusion: 
+
+Accepted, the comparison gives the same result for every status because AppointmentStatus.SCHEDULED has the value 'scheduled', and all 48 tests passed both before and after. The new test confirms cancelled appointments still don't block the same practitioner from being booked at that time. The F8-01 tests confirm the same/different practitioner rule is unchanged, and return objects, exceptions and store contents are unchanged. The code now uses the enum like the rest of the project, so a mistyped status string can't break the conflict check raising an error.
 
 ## I. Git, human review and integration
 
