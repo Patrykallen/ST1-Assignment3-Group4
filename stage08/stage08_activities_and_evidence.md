@@ -262,6 +262,24 @@ FR-05, BR-05 AC-04.1 and AC-04.2
 Complete both entries BEFORE Copilot. C/D supply observed/expected/reproduction/test; retain those initial facts and link them here.
 
 ### F8-01 human entry
+Likely cause and why plausible:
+SmartCareDataStore.has_practitioner_conflict(), checks to see if the practitioner already has an appointment, however it looks like the practitioner ID might be flipped around as. It checks if the practitioner ID matches a different practitioner instead of the same one. The rule fails in two ways as the same practitioner is allowed and a different practitioner is rejected. A missing or broken check should only cause one of those issues but one that been flipped around explains both.
+
+Evidence intended to inspect / competing explanation / discriminating check: 
+Evidence: has_practitioner_conflict() in smartcare/data_store.py, 
+the prepared diff, and the call in AppointmentService.book_appointment().
+
+Competing explanation: book_appointment() gives the wrong ID or datetime to the conflict check.
+
+Discriminating check: After booking A001 with DR001, call store.has_practitioner_conflict('DR001', time) and store.has_practitioner_conflict('DR002', time). 
+If they return False and True (flipped) the fault is in the store method.
+If they return True and False (The right way around) the fault is in how the service calls it.
+
+Member and saved sequence/time or commit showing this preceded consultation: 
+Jack Gerbich, last commit was: 6f25ee3 (“Completed Stage 8 Parts A and B”, 2026-11-04). The next commit will include sections C, D and E as a time stamp before consultation.
+Commit after sections C, D and E were completed but before consultation: debug/stage08 975cfa4
+
+### F8-02 human entry
 Likely cause and why plausible: 
 SmartCareDataStore.find_appointment() is skipping over cancelled appointments. The same A001 lookup works while the appointment is SCHEDULED as cancel_appointment finds it, but fails afterwards once the appointment becomes CANCELLED. So the result depends on the status not the ID as both tests fail looking up the ID after its canceled.
 
@@ -278,23 +296,7 @@ Discriminating check: After cancelling check whether A001 is still in store.list
 
 Member and saved sequence/time or commit showing this preceded consultation: 
 Jack Gerbich, last commit was: 6f25ee3 (“Completed Stage 8 Parts A and B”, 2026-11-04). The next commit will include sections C, D and E as a time stamp before consultation.
-
-### F8-02 human entry
-Likely cause and why plausible:
-SmartCareDataStore.has_practitioner_conflict(), checks to see if the practitioner already has an appointment, however it looks like the practitioner ID might be flipped around as. It checks if the practitioner ID matches a different practitioner instead of the same one. The rule fails in two ways as the same practitioner is allowed and a different practitioner is rejected. A missing or broken check should only cause one of those issues but one that been flipped around explains both.
-
-Evidence intended to inspect / competing explanation / discriminating check: 
-Evidence: has_practitioner_conflict() in smartcare/data_store.py, 
-the prepared diff, and the call in AppointmentService.book_appointment().
-
-Competing explanation: book_appointment() gives the wrong ID or datetime to the conflict check.
-
-Discriminating check: After booking A001 with DR001, call store.has_practitioner_conflict('DR001', time) and store.has_practitioner_conflict('DR002', time). 
-If they return False and True (flipped) the fault is in the store method.
-If they return True and False (The right way around) the fault is in how the service calls it.
-
-Member and saved sequence/time or commit showing this preceded consultation: 
-Jack Gerbich, last commit was: 6f25ee3 (“Completed Stage 8 Parts A and B”, 2026-11-04). The next commit will include sections C, D and E as a time stamp before consultation.
+Commit after sections C, D and E were completed but before consultation: debug/stage08 975cfa4
 
 ## F. GitHub Copilot prompts, findings and human decisions
 
