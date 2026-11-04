@@ -224,8 +224,20 @@ FR-05, BR-05 AC-04.1 and AC-04.2
 
 - Human hypothesis and intended checks: see E, F8-01.
 - Supported root cause and inspected code/runtime evidence: [complete after diagnosis]
-- Smallest justified fix / diff / why other behaviour is preserved: [complete]
-- Repair SHA / focused verification result: [complete]
+
+The practitioner comparison in SmartCareDataStore.has_practitioner_conflict() (smartcare/data_store.py, line 110) was `appointment.practitioner.practitioner_id != practitioner_id` instead of `==`, so a conflict was reported for a different practitioner at the same time and never for the same one. 
+
+Evidence: git diff b50010b e356c85 shows `==` changed to `!=`; calling the store directly after booking A001 with DR001 returned has_practitioner_conflict('DR001', t) = False and ('DR002', t) = True, the reverse of BR-05, AC-04.1, AC-04.2. See F8-01 in F.
+
+
+- Smallest justified fix / diff / why other behaviour is preserved: 
+
+Changed one operator on that line: `!= practitioner_id` → `== practitioner_id`, restoring the Stage 7 condition. The other parts of the condition and AppointmentService.book_appointment() were not changed. So duplicate IDs, unknown participants and cancelled appointments not blocking a slot behave the same as before.
+
+- Repair SHA / focused verification result:
+
+Repair SHA: ae2da34
+The three F8-01 focused tests from project/ went from 3 failed to 3 passed. The 3 failures are the F8-02 cancellation tests, not yet repaired.
 
 ## D. F8-02 diagnosis and repair
 
@@ -398,8 +410,8 @@ The root cause is the extra (appointment.status.value != "cancelled") condition 
 
 | Checkpoint | Code SHA or precise diff | Command and working directory | Actual result and artefact reference |
 |---|---|---|---|
-| F8-01 before repair | [complete] | [complete] | [complete] |
-| F8-01 after repair | [complete] | [complete] | [complete] |
+| F8-01 before repair | 9a4970c | python -m pytest tests/test_regressions.py::test_f8_01_same_practitioner_same_time_conflicts_other_allowed tests/test_starter.py::test_conflict_rule_and_different_practitioner tests/test_services.py::test_book_different_practitoner_same_time_allowed` from project/ | 3 failed: test_f8_01 (line 36) and test_conflict_rule_and_different_practitioner (line 127) – Failed: DID NOT RAISE ValueError; test_book_different_practitoner_same_time_allowed (line 180) – ValueError: Practitioner already has a SCHEDULED appointment at this time |
+| F8-01 after repair | ae2da34 | python -m pytest tests/test_regressions.py::test_f8_01_same_practitioner_same_time_conflicts_other_allowed tests/test_starter.py::test_conflict_rule_and_different_practitioner tests/test_services.py::test_book_different_practitoner_same_time_allowed` from project/ | Focused: 3 passed. Full suite: 3 failed, 44 passed (remaining failures are F8-02: test_f8_02_cancelled_appointment_is_retained_and_found, test_cancel_scheduled_appointment, test_cancel_appointment_twice) |
 | F8-02 before repair | [complete] | [complete] | [complete] |
 | F8-02 after repair | [complete] | [complete] | [complete] |
 | Full suite after both repairs, before refactor | [complete] | [complete] | [complete] |
