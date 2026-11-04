@@ -64,3 +64,19 @@ def test_f8_02_cancelled_appointment_is_retained_and_found():
         appointment_service.cancel_appointment('A001')
     assert appointment.status is AppointmentStatus.CANCELLED
     assert store.list_appointments() == [appointment]
+
+
+def test_cancelled_appointment_does_not_block_same_practitioner_slot():
+    # FR-05 / BR-05: only a SCHEDULED appointment conflicts so the same
+    # practitioner can be rebooked at the time of a cancelled appointment.
+    
+    store, appointment_service = make_services()
+    when = datetime(2026, 11, 20, 9, 0)
+    cancelled = appointment_service.book_appointment('A001', 'P001', 'DR001', when)
+    appointment_service.cancel_appointment('A001')
+
+    rebooked = appointment_service.book_appointment('A002', 'P002', 'DR001', when)
+
+    assert rebooked.status is AppointmentStatus.SCHEDULED
+    assert store.list_appointments() == [cancelled, rebooked]
+    assert cancelled.status is AppointmentStatus.CANCELLED
