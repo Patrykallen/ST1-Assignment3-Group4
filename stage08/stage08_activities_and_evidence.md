@@ -14,58 +14,185 @@ Use concise results and accessible artefact links rather than copying entire log
 
 ### A.1 Classify all five statements
 For each, choose symptom, evidence or hypothesis/opinion, and explain your reason. These are discussion statements, not confirmed diagnoses.
+
 - Appointment disappears after cancellation.
+Symptom, it describes what the user observes not why is happens
+
 - The data-store removal path is probably being called.
+Hypothesis, it's a guess at the cause and the use of the word "probably" shows that the actual cause is unknown.
+
 - The failing test shows store.find_appointment('A1') returns None.
+Evidance, it's an observed and repeatable result from running a test.
+
 - The service layer is badly designed.
+Opinion, at's a vague judgement with nothing describing why or what is "bad" about it.
+
 - Traceback points to smartcare/services.py line 42 in the example.
 The example line number is illustrative; inspect the actual line in your run. The removal hypothesis must be tested against the current project, which has no public delete operation.
 
-Response and reason: [complete]
+Evidence, ir shows where the exception was raised giving us evidance of location, however dose not say wha the cause was. In our actual run the LookupError is raised at smartcare/services.py line 141 in AppointmentService.find_appointment(), the faulty value could have been something it tried to call however.
+
 
 ### A.2 Build a debugging record
 Choose the cancelled-history scenario or a same-practitioner/time booking. Before changing code, record expected behaviour, observed behaviour, minimal reproduction, a hypothesis and evidence to inspect. Use a requirement to justify the expectation. Keep the initial hypothesis even if later evidence disproves it.
 
-Response and reason: [complete]
+Response and reason:
+Cancelled appointment history scenario.
+Expected behaviour: After a SCHEDULED appointment is cancelled its status should change to CANCELLED, and it should still be able to be looked up by its ID, and its still stored in the appointment list.
+
+Observed behaviour: The appointment status does change to CANCELLED, but looking the appointment up afterwards raises "LookupError: Appointment not found".
+
+Minimal reproduction:
+    1. Create a new SmartCareDataStore
+    2. Register patient P001 and practitioner DR001
+    3. Book A001 for P001/DR001 at 2026-11-10 10:00
+    4. Call cancel_appointment("A001")
+    5. Call find_appointment ("A001")
+
+Initial hypothesis: Canelling the appointment removes it from the store. Or the store stops returning it so then the lookup cant find it.
+
+Evidance to inspect:
+    AppointmentService.cancel_appointment() and Appointment.cancel(), for anything that removes or replaces the appointment record.
+    SmartCareDataStore.find_appointment(), to see how it searches for the appointments.
+    If store.list_appointments() still has A001 after cancelling. This checks if its deleted or just hidden by the look up.
 
 ### A.3 Test defect or product defect
 A test expects cancelled appointments to be deleted, but FR-07 says history must be retained. What should be changed? Explain why. Also decide whether a test expecting different practitioners at the same time to conflict reflects AC-04.2. Do not assume every failing test is correct.
 
-Response and reason: [complete]
+Test expecting cancelled appointments to be deleted: This is a test defect as FR-07 says cancelled history needs to be retained, so the test goes against the requirements. The test should be changed to check if the cancelled appointment is still able to be found.
+
+Test expecting different practitioner at the same time to conflict: This is also a test defect as it goes against AC-04.2 which says different practitioners at the same time is allowed. A conflict should only apply when its the same practitioner at the same time with another SCHEDULED appointment.
 
 ### A.4 Refactoring smell hunt
 Consider a hypothetical 70-line AppointmentService method containing duplicate status strings, direct collection manipulation, printing, validation and four nested conditionals. Identify the smells and propose small refactorings that preserve required behaviour. The direct collection work replaces the old storage-specific scenario; use the existing SmartCareDataStore boundary. Do not implement an extra architecture.
 Classify these proposed changes as refactoring, repair or feature: rename appt to appointment; extract a repeated conflict helper; add rescheduling; restore retained cancellation lookup; replace a magic status string with the existing enum. Explain the behaviour that must remain unchanged.
 
-Response and reason: [complete]
+The method is too long at 70 lines and taking on too many jobs. It needs to be split up.
+
+Duplicate status strings. Replace duplicate status strings with existing AppointmentStatus enum values so typos cant sneak though.
+
+Direct collection manipulation. The service should go though SmartCareDataStore methods like add_appointment, find_appointment ect. Instead of editiing the stores dictionaries.
+
+Printing inside the service. By removing the prints the service should return values or raise exceptions and leave the output on the console.
+
+Validation mixed in with the method. Use the existing domain and store validation instead of repeating it.
+
+Four nested conditionals. Use raise or return to reduce the number of nested conditionals.
+
+Classifications:
+
+| Change | Type | Why |
+| --- | --- | --- |
+| Rename appt to appointment | Refactoring | Structure and readability only |
+|Extract a repeated conflict | Refactoring | Same logic just moved to one place |
+| Add rescheduling | Feature | New behaviour |
+| Restore retained cancellation lookup | Repair | Fixes behaviour that breaks FR-07 |
+| Replace a magic status sting with the existing enum 
+ Refactoring | As long as the compartison give the same result |
+
+Unchanged behaviours:
+The same exception types:
+    ValueRoor for invalud values, duplicates, conflicts and illegal status changes.
+    LookupError for missing records.
+Conflicts only for the same practitioner at the same time with a SCHEDULED appointment.
+Cancelled appointments are stored not deleted.
+Failed operations leaving the store unchanged.
 
 ### A.5 Traceback and hypothesis ranking
 Using one actual failure, identify its exception/assertion, expected and observed values, test line, application call path and supporting requirement. List three plausible causes and rank them by fit with the available evidence. For each cause, name a check that could distinguish it from the others. Explain why a traceback alone does not establish the cause.
 
-Response and reason: [complete]
+Using: test_cancel_scheduled_appointment
+Exception/assertion: "LookupError: Appointment not found", raised when evaluating "assert".
+Expected value: The same Appointment object (A001) with status CANCELLED
+Observed value: No object returned, a LookupError was raised instead.
+Test line: tests/test_services.py line 211. The two assertions before it were "result is appointment" and "status is AppointmentStatus.CANCELLED", passed so the cancellation worked.
+Call path: test line 211 --> AppointmentService.find_appointment() (smartcare/services.py) → SmartCareDataStore.find_appointment() returns None → LookupError raised at smartcare/services.py line 141.
+Supporting requirement: FR-07 retain calcelled history and FR-06 cancel appointments.
+
+Ranked plausible causes:
+    1. SmartCareDataStore.find_appointment() skips or filters out cancelled appointments.
+        Best fit: cancel_appointment() found A001 when it was CHEDULED, but the same lookup fails after it became CNACELLED, so the results seem to depend on the status.
+        Check: After cancelling, checking if A001 is still in store.list_appointments(). If it's not there but find_appointment returns None, the lookup is hiding it.
+    2. Cancellation removes the appointment from the store.
+        Average fit: The store has no public delete method and the test still has the appointment object.
+        Check: Compare len(store.list_appointments()) before and after cancelling and look though cancel_appointments() and Appointmend.cancel().
+    3. The ID is store or looked up differently
+        Weakest fit: The same A001 ID was found successfully by cancel appointment() just before.
+        Check: Call find_appointment("A001") before cancelling if it works then the ID handling ins't the cause.
+
+Why is a traceback alone not enough?
+It shows where the exception was raised, in this case line 141 but not why it was raised. The LoopupError is the correct behaviour for a missing appointment. The actual issue is whatever made the store return None, and that could have been in another function or file entirely.
 
 ### A.6 Exit question
 Why is changing code immediately after seeing a failure often a poor debugging strategy?
 
-Response and reason: [complete]
+The failure only shows the symptoms of the problem not the cause. Changing the code straight away is just guessing. You might acidentaly patch where the error appeared instead of where the fault is. "fix" a test that was actually correct or a product that was correct but the test was wrong. Break other behaviour that you want or hie the problem and it could come back later.
+You should first try reproduce the issue so you can narrow down what is causing it. Compare the results to the requirements and use mutiple tests to see which part is acutally broken. Before rerunning the tests to see if you were correct.
 
 
-Classification responses (1–5, each with reason): [complete]
-Tutorial debugging record — expected; observed; reproduction; hypothesis; evidence to inspect: [complete]
-Traceback — exception/assertion; expected/observed values; test line; call path; requirement; ranked causes and discriminating checks: [complete]
+Classification responses (1–5, each with reason):
+The classification responses can be found in A.1.
+
+Tutorial debugging record — expected; observed; reproduction; hypothesis; evidence to inspect:
+Totorial debugging record can be found in A.2.
+
+Traceback — exception/assertion; expected/observed values; test line; call path; requirement; ranked causes and discriminating checks:
+Traceback can be found in A.5.
 
 ## B. Stage 7 baseline and safe preparation
 
-- Stage 7 code SHA and requirement baseline: [complete]
-- Baseline test command / working directory / observed result / evidence: [complete]
-- Clean preparation SHA if a record-only commit followed Stage 7: [complete]
-- Branch and preparer / how teammates obtained this branch: [complete]
-- Downloaded tool version, source SHA256 and --check outcome: [complete]
-- --apply and --verify output summaries / artefact references: [complete]
-- Bounded diff inspected and recovery location (not committed): [complete]
-- Prepared faulty-state commit SHA: [complete]
-- Preparation or recovery issues and resolution, if any: [complete]
-- Initial prepared full-suite command / result / key failures: [complete]
+- Stage 7 code SHA and requirement baseline:
+SHA: b50010ba093eb3d2e5210509ebbdc902ac3ccdfe (“Stage 07 complete”, main)
+Requirements baseline: SmartCare A3 Requirements Baseline 2026, revision 2.
+
+- Baseline test command / working directory / observed result / evidence:
+python -m pytest from project/ at b50010b – 45 passed, 0 failed.
+
+- Clean preparation SHA if a record-only commit followed Stage 7:
+SHA: 1a454aa30f70c0913a25d0e1b9df103ea5321105 (“update .gitignore”).
+Omly .gitignore changed no code or tests changed, so the code is the same as the Stage 7 SHA.
+
+- Branch and preparer / how teammates obtained this branch:
+Branch debug/stage08 was prepared by Muthuraman and pushed to origin. Myself (Gerbich) got it with git fetch origin then git switch debug/stage08.
+
+- Downloaded tool version, source SHA256 and --check outcome:
+=====================================================
+Muthuraman to complete as I dont have access to this.
+=====================================================
+
+- --apply and --verify output summaries / artefact references:
+=====================================================
+Muthuraman to complete as I dont have access to this.
+=====================================================
+
+- Bounded diff inspected and recovery location (not committed):
+git diff b50010b e356c85, shows changes to:
+project/smartcare/data_store.py 
+SmartCareDataStore.find_appointment() 
+SmartCareDataStore.has_practitioner_conflict()
+
+=====================================================
+Muthuraman to complete recovery location as I dont have access to this.
+=====================================================
+
+- Prepared faulty-state commit SHA:
+e356c85350a8db8b37714c8ad9ac433ed27de7d9 (“prepare debugg stage08”) on debug/stage08.
+
+- Preparation or recovery issues and resolution, if any: 
+=====================================================
+Muthuraman to complete as I dont have access to this.
+=====================================================
+
+- Initial prepared full-suite command / result / key failures:
+python -m pytest from project/ at e356c85 – 4 failed, 41 passed:
+    1.  tests/test_services.py::test_book_different_practitoner_same_time_allowed: 
+        ValueError (practitioner conflict raised for a different practitioner)
+    2.  tests/test_starter.py::test_conflict_rule_and_different_practitioner: 
+        Failed: DID NOT RAISE ValueError (same practitioner at the same time was not rejected)
+    3.  tests/test_services.py::test_cancel_scheduled_appointment: 
+        LookupError: Appointment not found after cancelling
+    4. tests/test_services.py::test_cancel_appointment_twice: 
+        LookupError instead of ValueError on the second cancel
 
 ## C. F8-01 diagnosis and repair
 
