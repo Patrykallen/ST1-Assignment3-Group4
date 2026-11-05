@@ -487,51 +487,59 @@ Each member's substantive contribution and artefact: [complete]
 
 ## J. Required reflections
 
-1. Which Copilot diagnosis appeared convincing but lacked evidence? [complete; report honestly if none and discuss the least-supported real suggestion]
-2. What evidence changed your group's view? [complete]
-3. How did regression tests protect the refactoring? [complete]
+1. Which Copilot diagnosis appeared convincing but lacked evidence? 
+
+Copilot's second suggestion for both defects. For F8-01 it said the conflict rule was reversed on purpose because a developer misread the requirement, and for F8-02 it said cancelled appointments were hidden because of a misunderstood business rule. Without prior knowledge to the code being pruposefull messed with, both would have sounded plausible. As they explained the faulty line well and used the requirement IDs, but there was no evidence for them. The git history showed the Stage 7 code (b50010b) was correctly using `==` and no status filter and both faults were added in e356c85 by the Stage 8 preparation tool, so nobody misread anything. Copilot also suggested checking design notes and prior reviews that don't exist in our project. Both were marked partly correct (right line, wrong reason) and rejected.
+
+2. What evidence changed your group's view?
+
+Running the discriminating checks directly instead of relying on the tracebacks. For F8-01, calling store.has_practitioner_conflict() directly with the correct IDs still gave reversed results (DR001 False, DR002 True). This showed the fault was inside the store method and ruled out our other competing idea that the service was passing the wrong ID. For F8-02, A001 was still in store.list_appointments() after cancelling while store.find_appointment() returned None, which ruled out the appointment being deleted and showed the lookup was hiding it. The tracebacks pointed at services.py lines 127, 141 and 154, but the actual cause in both cases was in data_store.py. While planning the refactor we also found that none of the existing 47 tests checked the status part of the conflict condition, so we added a test before changing it.
+
+3. How did regression tests protect the refactoring? 
+
+The full suite was run before and after the refactor and gave the same result both times (48 passed at 2a6e577 and 48 passed at 86b1bc4). As no existing test checked that a cancelled appointment doesn't block the same practitioner at that time, test_cancelled_appointment_does_not_block_same_practitioner_slot was added and committed before the refactor. Without it a wrong change to the status check could have still passed all the earlier tests. The F8-01 and F8-02 regression tests and the original conflict tests also confirmed the same/different practitioner rule and cancelled lookup still worked after the change.
 
 ## K. Ten formative questions
 
 1. What should an engineer do before changing code in response to a failure?
 
-Response: [complete]
+Response: Reproduce the failure, work out the expected behaviour from the requirements, write down a hypothesis about the cause and gather evidence that can confirm or rule it out. Only then make the smallest change that fixes the cause.
 
 2. Where should expected behaviour come from during debugging?
 
-Response: [complete]
+Response: From the requirements created by the client for us the SmartCare revision 2 baseline, not from what the current code or a failing test happens to do. A test can be wrong too.
 
 3. What is a debugging hypothesis?
 
-Response: [complete]
+Response: A testable explanation of what is causing a failure, along with a check that would show whether it is right or wrong.
 
 4. What is a regression test and why is it retained?
 
-Response: [complete]
+Response: A test that checks a bug that has been fixed stays fixed. It is kept in the suite so that if a later change brings the bug back the test fails straight away.
 
 5. What is meant by root cause?
 
-Response: [complete]
+Response: The actual reason a failure happens, not just where it shows up. For example F8-02 showed up as a LookupError in services.py but the root cause was the status filter in data_store.py.
 
 6. What is refactoring?
 
-Response: [complete]
+Response: Changing the internal structure of code to make it clearer or easier to maintain without changing what it does. All tests should pass before and after.
 
 7. What is a swallowed exception?
 
-Response: [complete]
+Response: An exception that is caught and then ignored for example `except: pass`, so the error is hidden instead of being reported or handled. It makes bugs much harder to find because the program carries on as if nothing went wrong.
 
 8. What is a code smell?
 
-Response: [complete]
+Response: A sign in the code that something might be badly structured like a long method, duplicated code, magic strings or deep nesting. It is not necessarily a bug, but it makes bugs more likely and the code harder to change when a bug does occur.
 
 9. How should GitHub Copilot-generated debugging diagnoses be treated?
 
-Response: [complete]
+Response: As hypotheses and not answers, each suggestion should be checked against real evidence such as test results, the code and git history before accepting it. Copilot can sound confident and still be wrong and it does not replace our own checks and testing or another member's review.
 
 10. What is the Stage 8 engineering rule?
 
-Response: [complete]
+Response: Diagnose before you fix. Reproduce the failure, state the expected behaviour from a requirement, test a hypothesis with evidence, make the smallest repair, keep the regression tests, and only refactor while all tests are passing.
 
 ## L. Completion and handover
 
