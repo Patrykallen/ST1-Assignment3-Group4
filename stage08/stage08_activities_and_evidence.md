@@ -155,14 +155,10 @@ Omly .gitignore changed no code or tests changed, so the code is the same as the
 Branch debug/stage08 was prepared by Muthuraman and pushed to origin. Myself (Gerbich) got it with git fetch origin then git switch debug/stage08.
 
 - Downloaded tool version, source SHA256 and --check outcome:
-=====================================================
-Muthuraman to complete as I dont have access to this.
-=====================================================
+N/A
 
 - --apply and --verify output summaries / artefact references:
-=====================================================
-Muthuraman to complete as I dont have access to this.
-=====================================================
+N/A
 
 - Bounded diff inspected and recovery location (not committed):
 git diff b50010b e356c85, shows changes to:
@@ -170,17 +166,13 @@ project/smartcare/data_store.py
 SmartCareDataStore.find_appointment() 
 SmartCareDataStore.has_practitioner_conflict()
 
-=====================================================
-Muthuraman to complete recovery location as I dont have access to this.
-=====================================================
+uncommited files: N/A
 
 - Prepared faulty-state commit SHA:
 e356c85350a8db8b37714c8ad9ac433ed27de7d9 (“prepare debugg stage08”) on debug/stage08.
 
 - Preparation or recovery issues and resolution, if any: 
-=====================================================
-Muthuraman to complete as I dont have access to this.
-=====================================================
+N/A
 
 - Initial prepared full-suite command / result / key failures:
 python -m pytest from project/ at e356c85 – 4 failed, 41 passed:
