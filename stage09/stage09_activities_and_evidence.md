@@ -12,56 +12,61 @@ Stage 8 integrated SHA, command, working directory and actual result: <!-- compl
 
 | Information | Required session/domain or transient state? | Requirement or reason |
 |---|---|---|
-| Patient identity | | |
-| Appointment history | | |
-| Temporary menu choice | | |
-| Practitioner specialty | | |
-| Debug print output | | |
-| Appointment status | | |
+| Patient identity | Transient / session state | Stored in-memory in `SmartCareDataStore` during execution, wiped on exit. |
+| Appointment history | Transient / session state | Retained in-memory across bookings and cancellations within the active session. |
+| Temporary menu choice | Transient state | Local variable captured during each loop iteration of the CLI console. |
+| Practitioner specialty | Domain / reference configuration | Seeded reference data associated with practitioner records in memory. |
+| Debug print output | Transient execution log | Printed to stdout during runtime verification, not stored. |
+| Appointment status | Transient domain object attribute | Tracks lifecycle (`SCHEDULED`, `CANCELLED`, `COMPLETED`) in memory. |
 
-What is intentionally lost on exit? <!-- response -->
+What is intentionally lost on exit? All runtime registrations, bookings, cancellations, and state modifications, data persistence and database storage are not part of Stage 9.
 
 ### A2 Interface and domain data plan
 
-Plan before AI. This replaces schema/key design; no database tables are required.
+Plan before AI. This replaces schema/key design, no database tables are required.
 
 | Function or component | Explicit inputs and types | Outputs | Responsibility and validation | Domain source / existing constraint |
 |---|---|---|---|---|
-| appointment_sort_key | | | | |
-| select_appointments | | | | |
-| Service listing | | | | |
-| Console | | | | |
+| appointment_sort_key | `appointment: Appointment` | `tuple` (`datetime`, `str`) | Extracts sorting criteria with tie-breaking by appointment ID. | Domain model date and ID attributes. |
+| select_appointments | `appointments: list[Appointment]`, `practitioner_id: str`, `status: Optional[str] = None` | `list[Appointment]` | Pure query filtering by practitioner and optional status, returning sorted results. | Service query specifications (QRY-01–04). |
+| Service listing | `practitioner_id: str`, `status: Optional[str] = None` | `list[Appointment]` | Coordinates store access and invokes pure query functions. | `AppointmentService` coordination layer. |
+| Console | CLI `sys.stdin` / `sys.stdout` | `None` (side effects via I/O) | Manages interactive menu loop, user prompts, and exception handling (`ValueError`, `LookupError`). | `console.py` terminal interface (UI-01–02). |
 
-Relate patient ID/name, practitioner ID/name/specialty, and appointment ID/actual participants/date_time/status to the existing contracts: <!-- response -->
+Relate patient ID/name, practitioner ID/name/specialty, and appointment ID/actual participants/date_time/status to the existing contracts: Entities are linked via identifiers stored in memory within domain objects, satisfying entity relationships without external databases.
 
 ### A3 Responsibility violations
 
 | Conceptual case | Violation | Correct boundary and reason |
 |---|---|---|
-| Appointment.cancel reads input | | |
-| Service prints/reads the menu | | |
-| Query sorts its source in place | | |
-| Store prints Appointment saved | | |
+| Appointment.cancel reads input | Violates separation of concerns by coupling domain logic to I/O devices. | Console handles `input()`, while service/domain methods update state without prompting the user. |
+| Service prints/reads the menu | Violates service layer boundaries, services should handle business logic and coordination, not CLI UI. | Console manages terminal display and user prompts, services return data or raise domain exceptions. |
+| Query sorts its source in place | Violates pure function principles by mutating input collections destructively. | Queries use `sorted()` or return new lists without mutating original collections in place. |
+| Store prints Appointment saved | Violates single responsibility principle by mixing data storage with terminal presentation. | Data store manages collections silently, the console/UI prints confirmation messages. |
 
 ### A4 Sorting comparison
 
-For `appointments.sort(key=appointment_sort_key)` and `result = sorted(appointments, key=appointment_sort_key)`, predict source order, return value and result identity. Give a meaningful mutation check: <!-- response -->
+For `appointments.sort(key=appointment_sort_key)` and `result = sorted(appointments, key=appointment_sort_key)`, predict source order, return value and result identity. Give a meaningful mutation check: 
+`.sort()` mutates the original list in place and returns `None`, whereas `sorted()` creates and returns a new list object, leaving the source list entirely unmodified.
 
-Score-example prediction and explanation of passing the named key: <!-- response -->
+Score-example prediction and explanation of passing the named key: Passing a key function extracts comparison criteria (tuple of date_time and appointment_id) so Python compares structured tuples rather than raw domain objects directly, ensuring deterministic ordering even when timestamps match.
 
 ### A5 Exit question
 
-Explain cancellation versus deletion, and checks for same-session lookup, all-status listing and SCHEDULED-only exclusion: <!-- response -->
+Explain cancellation versus deletion, and checks for same-session lookup, all-status listing and SCHEDULED-only exclusion:
+Cancellation changes an appointment's status (`SCHEDULED` -> `CANCELLED`) while maintaining the object in memory for audit history, where deletion would remove it completely. Same-session lookup verifies objects in the active data store. All-status listing includes scheduled, cancelled, and completed appointments based on filtering, while `SCHEDULED`-only exclusion ensures historical or cancelled slots do not block new bookings.
 
 ## B. Human design and contracts
 
-Complete before GitHub Copilot. Record any interface/integrity decision and its reasoning: <!-- response -->
+Complete before GitHub Copilot. Record any interface/integrity decision and its reasoning: Designed pure query functions (`select_appointments`, `appointment_sort_key`) in `queries.py` to keep filtering logic side-effect-free, and structured `AppointmentService` and `console.py` to cleanly separate business logic from CLI I/O and exception handling.
 
 | Requirement | Input / session data | Operation and responsible component | Expected result or error | Test / evidence |
 |---|---|---|---|---|
-| | | | | |
+| QRY-01 | Practitioner ID, optional status | `select_appointments()` in `queries.py` | Returns filtered list of appointments matching criteria | `test_queries.py` |
+| UI-01 | Menu option inputs (1–8) | `console.py` `run_menu()` | Executes corresponding service action successfully | `test_workflows.py` |
+| FR-05 | Appointment ID | `AppointmentService.cancel_appointment()` | Updates status to `CANCELLED`, preserves history | `test_services.py` |
 
-Cover QRY-01–04, FP-01–03, UI-01–02 and relevant FR-01–09. Explain empty versus unknown versus invalid, enum conversion, actual object identity, error handling and unchanged state on rejection: <!-- response -->
+Cover QRY-01–04, FP-01–03, UI-01–02 and relevant FR-01–09. Explain empty versus unknown versus invalid, enum conversion, actual object identity, error handling and unchanged state on rejection: 
+Empty inputs return empty collections or trigger validation messages, unknown IDs raise `LookupError`, invalid formats raise `ValueError`. Enum conversion maps string inputs to strict enumeration values. Error handling catches domain exceptions cleanly in the console without crashing, ensuring application state remains unchanged upon rejection.
 
 ## C. Implementation and query verification
 
@@ -82,7 +87,7 @@ What the tests do and do not establish: <!-- response -->
 | UI-02 invalid-input recovery | | | | |
 | Automated service workflow | | | | |
 
-Include registration/find, booking, conflict rejection, different-practitioner booking, cancellation, retrieval, listing/filtering, freed slot and exit; duplicate/unknown/blank IDs, malformed/impossible date, invalid status, unknown choice and repeated cancellation. Identify before/after state and subsequent successful action.
+Include registration/find, booking, conflict rejection, different-practitioner booking, cancellation, retrieval, listing/filtering, freed slot and exit, duplicate/unknown/blank IDs, malformed/impossible date, invalid status, unknown choice and repeated cancellation. Identify before/after state and subsequent successful action.
 
 ## E. GitHub Copilot review and human decisions
 
@@ -129,7 +134,7 @@ UG common candidate / PG future branch plan: <!-- complete -->
 - [ ] Query contracts, purity, new lists and named-key ordering verified.
 - [ ] Service empty/unknown/invalid cases and cancellation history verified.
 - [ ] Every console command and invalid-input recovery demonstrated.
-- [ ] Query and workflow tests plus all previous tests pass; actual evidence linked.
+- [ ] Query and workflow tests plus all previous tests pass actual evidence linked.
 - [ ] Human design, Copilot critique, review and integration recorded honestly.
 - [ ] Reflections and ten formative responses completed.
 - [ ] README updated; earlier code/tests/records preserved.
