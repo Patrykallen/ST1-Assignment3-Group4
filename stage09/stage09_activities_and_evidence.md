@@ -72,12 +72,17 @@ Empty inputs return empty collections or trigger validation messages, unknown ID
 
 | Requirement / test ID | Code location | Case and meaningful assertion | Actual result | Evidence link |
 |---|---|---|---|---|
-| | | | | |
+| QRY-01 / test_select_appointments | `queries.py` | Practitioner isolation: filtering returns only appointments matching `practitioner_id` | Passed (100% green) | `project/tests/test_queries.py` |
+| QRY-02 / test_status_filter | `queries.py` | Enum status filter (SCHEDULED, CANCELLED, COMPLETED) & default ALL when status is omitted | Passed (100% green) | `project/tests/test_queries.py` |
+| QRY-03 / test_sorting | `queries.py` | Sorted chronologically by `date_time`, with ID tie-breaking for equal timestamps | Passed (100% green) | `project/tests/test_queries.py` |
+| QRY-04 / test_immutability | `queries.py` | Input list remains unmutated; fresh list returned with preserved object references | Passed (100% green) | `project/tests/test_queries.py` |
+| QRY-05 / test_query_edge_cases | `queries.py` | Edge cases: unknown practitioner returns empty list, invalid status raises ValueError | Passed (100% green) | `project/tests/test_queries.py` |
 
-Include practitioner isolation, every enum status/default all, equal-time ID tie-break, named-key reuse, repeated calls, empty/already-sorted fresh lists, unchanged source order/fields, known-empty/unknown/invalid service cases and retained history.
+Purity explanation from code inspection, including absence of hidden state and I/O: 
+`select_appointments` and `appointment_sort_key` in `queries.py` are pure functions. They compute outputs solely from explicit input arguments, perform no global or hidden state access, execute no I/O operations (`print` or `input`), and use `sorted()` to return a new list container without mutating the original input list.
 
-Purity explanation from code inspection, including absence of hidden state and I/O: <!-- response -->
-What the tests do and do not establish: <!-- response -->
+What the tests do and do not establish: 
+The unit tests establish that the filtering and sorting algorithms work correctly without side effects on given lists of in-memory domain objects. They do not establish CLI terminal rendering, user keypress interaction, or permanent database persistence.
 
 ## D. Integrated console and workflow evidence
 
