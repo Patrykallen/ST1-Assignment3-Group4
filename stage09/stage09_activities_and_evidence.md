@@ -103,22 +103,44 @@ Responsibility check: explain how domain invariants, shared-store collections, s
 
 ## F. Required reflections
 
-1. Which integration concern was architectural rather than a filtering/sorting detail? <!-- response -->
-2. Which Copilot suggestion did you reject as over-engineering, and why? <!-- response -->
-3. How did you prove cancelled appointments remain retrievable and listable in the same session? <!-- response -->
+1. Which integration concern was architectural rather than a filtering/sorting detail? 
+The concerns between pure query funcitons (`queres.py`), state coordination services (`servies.py`), and CLI I/O presentation (`console.py`). Making sure that pure queries stayed free of side effects and I/O operations while services managed state mutations was a core challenge rather than a simple detail for filtering.
+
+2. Which Copilot suggestion did you reject as over-engineering, and why? 
+The suggestion to make make complex data base caching layers or external persistance libraries, which were not used because Stage 9 mandates volatile, in memory only state without external databases.
+3. How did you prove cancelled appointments remain retrievable and listable in the same session? Through unit tests verifiying that calling `.cancel()` updated the status attribute to `CANCELLED` while preserving the object in the data store collection, so it can be retrieved and filtered when listing appointments.
 
 ## G. Ten formative answers
 
-1. What makes select_appointments pure, and what side effect breaks purity? <!-- response -->
-2. Which explicit inputs are needed, and why avoid a global store? <!-- response -->
-3. How can a new list reuse Appointment objects safely? <!-- response -->
-4. Why use a named key, and what breaks equal-time ties? <!-- response -->
-5. How do default and explicit status filters differ? <!-- response -->
-6. How do empty, unknown practitioner and invalid filter cases differ? <!-- response -->
-7. Which console errors recover, and how is unchanged state checked? <!-- response -->
-8. What is data integrity for registered participants, conflicts and history? <!-- response -->
-9. What is Copilot's review role, and who verifies findings? <!-- response -->
-10. How do pure functions and OOP responsibilities work together? <!-- response -->
+1. What makes select_appointments pure, and what side effect breaks purity? 
+It is pure because it takes explicit inputs, computes a determined result, and returns a new list without changing inputs or performing I/O. Mutating input lists in place or printing/logging inside the function would make side effects and break purity.
+
+2. Which explicit inputs are needed, and why avoid a global store? 
+Explicit inputs (such as the appointment collection, practitioner ID, and optional status) ensure functions are deterministic and easily testable, where global stores create hidden state dependencies, tight coupling, and difficult test isolation.
+
+3. How can a new list reuse Appointment objects safely? 
+By creating a new collection container (like a list returned by `sorted()` or comprehension) that holds references to existing `Appointment` objects without modifying their internal data fields or duplicating the domain objects themselves.
+
+4. Why use a named key, and what breaks equal-time ties? 
+A named key function extracts structured comparison values (such as a tuple of `date_time` and `appointment_id`), providing deterministic sorting where appointment IDs break ties when two appointments share the exact same timestamp.
+
+5. How do default and explicit status filters differ? 
+A default filter (when status is omitted or blank) returns all appointments across every status for that practitioner, whereas an explicit filter restricts the result set to a specific status value (e.g., `SCHEDULED`, `CANCELLED`, or `COMPLETED`).
+
+6. How do empty, unknown practitioner and invalid filter cases differ? 
+An empty case returns an empty collection when no matches exist, an unknown practitioner ID triggers a lookup error or empty result set, an invalid filter or malformed date raises a `ValueError`.
+
+7. Which console errors recover, and how is unchanged state checked? 
+`ValueError` and `LookupError` are caught within the console menu loop, displaying an error message and re-prompting the user without crashing, leaving existing data state unchanged.
+
+8. What is data integrity for registered participants, conflicts and history? 
+Data integrity ensures unique identification of participants, prevents overlapping appointment time conflicts for the same practitioner, and maintains audit history by preserving cancelled and completed records in memory.
+
+9. What is Copilot's review role, and who verifies findings? 
+Copilot acts as an AI pair programming assistant offering critique, code suggestions, and alternative patterns. The human developer retains final responsibility to critically evaluate, adapt, and rigorously test every finding.
+
+10. How do pure functions and OOP responsibilities work together? 
+Pure functions handle side-effect-free data transformation, querying, and sorting, while object-oriented domain classes encapsulate state, invariants, and business rules, forming a clean, modular architecture.
 
 ## H. Review, completion and common handover
 
