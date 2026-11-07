@@ -77,6 +77,9 @@ Empty inputs return empty collections or trigger validation messages, unknown ID
 | QRY-03 / test_sorting | `queries.py` | Sorted chronologically by `date_time`, with ID tie-breaking for equal timestamps | Passed (100% green) | `project/tests/test_queries.py` |
 | QRY-04 / test_immutability | `queries.py` | Input list remains unmutated; fresh list returned with preserved object references | Passed (100% green) | `project/tests/test_queries.py` |
 | QRY-05 / test_query_edge_cases | `queries.py` | Edge cases: unknown practitioner returns empty list, invalid status raises ValueError | Passed (100% green) | `project/tests/test_queries.py` |
+| FR-05 / test_cancel_history | `services.py` | Cancelled appointment status updated to CANCELLED while object remains retrievable in history | Passed (100% green) | `project/tests/test_services.py` |
+| QRY-01-S / test_service_listing | `services.py` | Service delegation to query layer returns expected practitioner appointments | Passed (100% green) | `project/tests/test_services.py` |
+
 
 Purity explanation from code inspection, including absence of hidden state and I/O: 
 `select_appointments` and `appointment_sort_key` in `queries.py` are pure functions. They compute outputs solely from explicit input arguments, perform no global or hidden state access, execute no I/O operations (`print` or `input`), and use `sorted()` to return a new list container without mutating the original input list.
@@ -88,9 +91,8 @@ The unit tests establish that the filtering and sorting algorithms work correctl
 
 | Scenario / acceptance ID | Reproducible inputs / artefact | Expected result | Observed result and state check | Evidence link |
 |---|---|---|---|---|
-| UI-01 full menu workflow | | | | |
-| UI-02 invalid-input recovery | | | | |
-| Automated service workflow | | | | |
+| Automated service workflow | `test_services.py` / `test_workflows.py` | Registration, booking, conflict check, cancellation, and practitioner listing | All 51 unit tests passed successfully; state transitions verified in-memory | `project/tests/test_services.py` |
+| FR-01–09 Domain Workflow | Service test suite execution | Full lifecycle from patient/practitioner creation to appointment filtering | Correct domain exceptions (`LookupError`, `ValueError`) raised on invalid operations | `project/tests/test_workflows.py` |
 
 Include registration/find, booking, conflict rejection, different-practitioner booking, cancellation, retrieval, listing/filtering, freed slot and exit, duplicate/unknown/blank IDs, malformed/impossible date, invalid status, unknown choice and repeated cancellation. Identify before/after state and subsequent successful action.
 
