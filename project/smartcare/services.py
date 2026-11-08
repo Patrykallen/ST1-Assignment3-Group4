@@ -170,4 +170,18 @@ class AppointmentService:
         ValueError; a known practitioner with no matches returns an
         empty list.
         """
-        raise NotImplementedError('Stage 9: practitioner appointments')
+        # 1. Validate practitioner existence using the store contract (raises LookupError if missing/unknown)
+        practitioner = self.data_store.find_practitioner(practitioner_id)
+        if practitioner is None:
+            raise LookupError('Practitioner not found')
+
+        # 2. Validate status if provided (must be an AppointmentStatus enum or None)
+        if status is not None and not isinstance(status, AppointmentStatus):
+            raise ValueError('Invalid appointment status')
+
+        # 3. Retrieve all appointments from the shared store
+        all_appointments = self.data_store.list_appointments()
+
+        # 4. Use our pure query from queries.py to select and sort them
+        from smartcare.queries import select_appointments
+        return select_appointments(all_appointments, practitioner.practitioner_id, status)
