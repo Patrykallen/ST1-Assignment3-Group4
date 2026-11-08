@@ -2,8 +2,8 @@
 
 BLANK student response template. Supplied from the beginning in stage12/ in your EXISTING repository; complete it only when you reach Stage 12 after the previous applicable stage is integrated, verified and recorded; preserve project/, tests, earlier records and Git history. UG/common and PG/extended scope must be explicit. Use concise results and versioned links, not copied logs or source. No staff answers or fabricated approvals.
 
-Group/tutorial: [response]
-Members and UG/PG applicability: [response]
+Group/tutorial: Group 4 -ST1, Assigment 3
+Members and UG/PG applicability: 4 group memebers all UG so Stage 10 an 11 are N/A
 
 
 ## A Release scope and starting SHA
@@ -176,21 +176,20 @@ Common decision / PG decision where different: The proposed decision applies to 
 
 ## K Final tested release SHA
 
-Exact common tested SHA: [response]
-Exact PG tested SHA or not applicable: [response]
-Final submitted SHA / repository URL: [response]
-Evidence-only later commit and difference explanation: [response]
-Executable changes after testing and re-verification: [response]
-Source ZIP name / SHA correspondence / extracted comparison: [response]
+Exact common tested SHA: 289029c6e2d5bcdd981f15a6121b1611df01f7a5
+Exact PG tested SHA or not applicable: N/A
+Final submitted SHA / repository URL: d35d7accf019046e51124b0aed53eda0c9f9cded.
+Evidence-only later commit and difference explanation:  The application was tested at commit 289029c6e2d5bcdd981f15a6121b1611df01f7a5, with 51 tests passing. Changes updated only the root README, project README and Stage 12 evidence documentation
+Source ZIP name / SHA correspondence / extracted comparison: Repository: https://github.com/Patrykallen/ST1-Assignment3-Group4. 
 
 
 ## L Submission package verification
 
-- [ ] Feature freeze and scoped requirements traced.
-- [ ] Applicable full regressions, integrated demo and invalid paths verified.
+- [ x] Feature freeze and scoped requirements traced.
+- [] Applicable full regressions, integrated demo and invalid paths verified.
 - [ ] Architecture/code quality and final AI/dependency checks complete.
 - [ ] Root README and project/README reproduced by another verifier.
-- [ ] Release notes, technical debt and limitations visible.
+- [x] Release notes, technical debt and limitations visible.
 - [ ] Independent human review, integration and release decision recorded.
 - [ ] Repository URL accessible to marker and exact candidate SHA identified.
 - [ ] One source ZIP from submitted commit with root README.md and .gitignore.
@@ -201,69 +200,69 @@ Source ZIP name / SHA correspondence / extracted comparison: [response]
 - [ ] Mixed-group common protection and candidate upload routing checked.
 - [ ] Group reflection, confidential individual peer forms and common team viva routed separately.
 
-Confirmed assessment item/upload route: [response]
-Deadline/timezone: [response]
-Repository access arrangement: [response]
-Mixed-candidate upload arrangement: [response]
-Oral/video recording/accessibility arrangements: [response]
-Remaining administration or release dependency: [response]
+Confirmed assessment item/upload route: Stage 12 source submission route pending confirmation. Group reflection, peer assessments and common team viva are part of a separate Canvas assignment administered through Cadmus.
+Deadline/timezone: 9/11/2026 11:59PM 
+Repository access arrangement: Group repository — https://github.com/Patrykallen/ST1-Assignment3-Group4
+Mixed-candidate upload arrangement: N/A
+Oral/video recording/accessibility arrangements: Will be done through canvas/cadmus
+Remaining administration or release dependency:
 
 
 ## M Formative questions
 
-1. What is a release candidate? [response]
+1. What is a release candidate? A release candidate is a version fo the software that has completed development and is being tested to determine whether it is ready to be released. It should have the intended functionality, with any issues identified and checked before the final approval.
 
-2. What is feature freeze and why is it used? [response]
+2. What is feature freeze and why is it used? Feature freeze is when no features are added to the software before it gets released. It allows us to focus on testing, fixing defects and ensuring the functionality works properly. This reduces the risk of new problems before the final release.
 
-3. What is regression testing in a release context? [response]
+3. What is regression testing in a release context? It involves rerunning tests before a software release to ensure that recnt chagnes havent broken something that was working earlier. It helps confrim that the application still meets the rquirements and that fixes havent accidently introduced new problems.
 
-4. What is a known limitation? [response]
+4. What is a known limitation? A known limitation is a restriction or missing capability that people are aware of and have documented. It does not mean the software is defective, provided that is is outside the scope and requiements.
 
-5. What is technical debt? [response]
+5. What is technical debt? It is work that has been delayed or improvements that are still needed for the software. If left unresolved it can make the system harder to maintain, improve, or expand.
 
-6. What are release notes? [response]
+6. What are release notes? They are documents that summarise what is included in a release of a software, such as new features, or bug fixes. they help the users and developers understand what issues or restrictions they should be aware of.
 
-7. What is software maintenance? [response]
+7. What is software maintenance? Software maintenance is the process of improving software after it has been released. This includes fixing bugs, improving performance, addressing security issues and overall making hcnages that keeps the software more reliable and compatible with changing requirements.
 
-8. What is the purpose of the individual demonstration/viva? [response]
+8. What is the purpose of the individual demonstration/viva? The purpose of the viva is to confirm that each member actually understands the software. It allows student to expalin their individual contributions and demonstrate that they understand all the work they completed.
 
-9. What should the final responsible-AI check establish before release? [response]
+9. What should the final responsible-AI check establish before release? It should confirm that any AI code or suggestions have been properly reviewed and understood. It should also ensure that no securit risks have been introduced.
 
-10. What is the main course conclusion about AI and the role of the software engineer? [response]
+10. What is the main course conclusion about AI and the role of the software engineer? AI can assist with writing code, testing, and finding problems, however software engineers are still responsible for understanding the requirements, making decisions abd ensuring the system actually works correctly. AI is a tool that supports the development while human engineers remain accountable for the quality of the work they are outputting.
 
 
 ## N Reflection viva and handover
 
-Strongest evidence SmartCare is ready: [response]
-Weakest area: [response]
-How AI use changed from Stage 1 to Stage 12: [response]
-Start doing — engineering and AI use: [response]
-Stop doing — engineering and AI use: [response]
-Continue doing — engineering and AI use: [response]
-What worked / caused rework / future delivery improvement: [response]
-One paragraph — If AI can write code why do we still need software engineers: [response]
+Strongest evidence SmartCare is ready: The strongest evidence that it is ready for the release is that all 51 automated tests apssed alongside the manual demonstrantions of the main features.
+Weakest area: The weakest area of our release evidence is the independent verification and final review process. Although all 51 automated tests passed and I successfully tested SmartCare on two computers, the second test was still completed by me rather than another group member.
+How AI use changed from Stage 1 to Stage 12: Throughout the assignment, our group used AI more critically by reviewing its suggestions and verifying them through testing. By stage 12, we understoof that AI can help develop but cannot be responsible for the final system.
+Start doing — engineering and AI use: Establish clear tasks and review Ai suggestions
+Stop doing — engineering and AI use: Relying on AI solutions without fullyh understanding
+Continue doing — engineering and AI use: Continue using them as tools to identify improvements
+What worked / caused rework / future delivery improvement: Merge conflicts and unclear responsibilities caused some rework, which could be reduced through better communication and earlier integration.
+One paragraph — If AI can write code why do we still need software engineers: AI can generate code, but it cant guarantee that a sustem meets its requirements or is reliable. Software engineers are still needed to make decisons, verify functionality, find risks and take real responsibilty for the final product released.
 
 | Preparation item | Own explanation and evidence link |
 |---|---|
-| Problem and stakeholders | [response] |
-| Two requirements and acceptance criteria | [response] |
-| Domain model and architecture | [response] |
-| Design trade-off | [response] |
-| Meaningful test and its limits / 100 percent coverage | [response] |
-| Diagnosed defect and verification | [response] |
-| Shared store and session-state/query responsibilities | [response] |
-| What would break if session-state lookup/query responsibilities changed? | [response] |
-| Why cancellation is domain behaviour / conflict coordination is service behaviour | [response] |
-| FR-07 retained history test | [response] |
-| Actual AI change rejected/modified or honestly accepted with verification | [response] |
-| Unresolved limitation / future production work | [response] |
-| Personal implementation contribution | [response] |
-| Personal test/review/design/integration contribution | [response] |
-| PG agentic change and rescheduling verification | [response] |
-| PG responsible-AI risk/remediation or supported no finding | [response] |
+| Problem and stakeholders | SmartCare helps small GP clinics manage patients, practitioners and appointments. Stakeholders include patients, practitioners and clinic staff. |
+| Two requirements and acceptance criteria | FR-05 prevents the same practitioner having two scheduled appointments at the same time. FR-07 requires cancelled appointments to remain retrievable. Both were demonstrated during Stage 12. |
+| Domain model and architecture | Patient, Practitioner and Appointment are domain classes. The data store manages records, services coordinate operations, queries filter/sort appointments and the console handles interaction. |
+| Design trade-off | In-memory storage keeps the application simple but means records are lost when the program closes. |
+| Meaningful test and its limits / 100 percent coverage | The cancellation test checks that an appointment becomes CANCELLED and remains retrievable. Even 100% code coverage would not prove every requirement works correctly. |
+| Diagnosed defect and verification | During Stage 6, a merge conflict in test_services.py was resolved by combining the tests. The integrated tests then passed. This was an integration issue rather than an application defect. |
+| Shared store and session-state/query responsibilities | Services share one SmartCareDataStore to access consistent session records. Pure query functions filter and sort appointments without changing stored data. |
+| What would break if session-state lookup/query responsibilities changed? | Services could access wrong records, and queries might accidentally modify appointment data or return incorrect results. |
+| Why cancellation is domain behaviour / conflict coordination is service behaviour | Appointment.cancel() controls valid status changes, while AppointmentService checks conflicts involving multiple appointments in the shared store. |
+| FR-07 retained history test | test_cancel_scheduled_appointment verifies that a cancelled appointment remains retrievable and retains its original object identity. |
+| Actual AI change rejected/modified or honestly accepted with verification | During Stage 6, Copilot suggested improving cancellation documentation and test assertions. The suggestions were reviewed, implemented and verified through pytest. |
+| Unresolved limitation / future production work | SmartCare only stores records during the current session. Production use would require persistent storage, authentication and additional security testing. |
+| Personal implementation contribution | Patrykallen implemented Stage 6 patient lookup and appointment cancellation functionality. |
+| Personal test/review/design/integration contribution | Patrykallen developed Stage 6 tests, resolved integration conflicts, reviewed Stage 7 test changes and completed Stage 12 release verification and documentation. |
+| PG agentic change and rescheduling verification | Not applicable — UG pathway. |
+| PG responsible-AI risk/remediation or supported no finding | Not applicable — UG pathway. |
 
 Optional bounded-change practice only: validation rule, focused test, safe error-message change, explicit-input query or agreed status rule with test. Explain expected impact before editing, make a small change, run the test, and identify evidence to inspect if unsure. No live AI unless explicitly permitted. Preserve the submitted candidate.
 
-Practice question/change and reasoning: [response or not undertaken]
-Separate reflection / peer / common team viva evidence links and routing: [response]
+Practice question/change and reasoning: Not undertaken as was not required and lack of time.
+Separate reflection / peer / common team viva evidence links and routing: The group reflection, individual confidential peer assessments and common team viva are part of a separate assignment on the unit's Canvas page
 No further coding stage. Later corrections use the published assessment process.
