@@ -1,30 +1,45 @@
-# SmartCare Stage 6 starter
+# SmartCare v1.0 — Clinic Management System
 
-Requirements baseline: SmartCare A3 2026 revision 2. Python 3.13 and pytest 8.3.5 verified. Runtime uses only the standard library.
+## Overview
+SmartCare is a Python-based clinic management application developed for Software Technology 1 Assignment 3. It follows the 2026 Revision 2 requirements and covers the UG scope.
+## Features
+- Patient and practitioner registration and lookup.
+- Appointment booking and practitioner conflict prevention.
+- Appointment cancellation and retained history.
+- Appointment lookup, filtering and sorting.
+- Interactive console with error handling.
 
-From the project root directory, using a Python environment with the development dependency installed:
+## Setup and Testing
+Tested using Python 3.14.4 and pytest 8.3.5.
 
-```sh
-# Run the interactive console CLI application
-python project/main.py --interactive
+From the `project/` directory:
 
-# Run the complete test suite (all unit and workflow tests)
-pyhton -m pytest project/tests/
+```powershell
+python -m pip install -r requirements-dev.txt
+python main.py
+python main.py --interactive
+python -m pytest -q
 ```
 
-If needed in your approved environment: `python -m pip install -r requirements-dev.txt`.
+**Regression result:** 51 passed in 0.06s.
 
-The demo registers synthetic records and books/finds an appointment. All supplied tests pass. Data exists only in this session and is lost on exit; FR-10 restart persistence is retired. Use synthetic information only.
+**Tested SHA:** `289029c6e2d5bcdd981f15a6121b1611df01f7a5`
 
-`domain.py` contains the entities, status and guarded cancellation. `data_store.py` holds three dictionaries through add/find/list methods. The three services share that object. Supplied registration, booking, appointment lookup and conflict checking work. IDs are trimmed, non-blank and case-sensitive. Properties provide read-only identity/appointment state; changes go through domain methods. No special architecture terminology is required.
+## Architecture
+- `domain.py` — Entities, validation and appointment status.
+- `data_store.py` — Shared in-memory records.
+- `services.py` — Registration, booking, cancellation and lookup.
+- `queries.py` — Pure filtering and sorting functions.
+- `console.py` — User interaction and error recovery.
+- `tests/` — Automated tests.
 
-Stage 6 TODOs: service patient/practitioner lookup and cancellation. Stage 9 TODOs: pure query, named sort key, service listing and interactive menu. The starter TODO contracts are in docstrings. All three Stage 6 TODO calls deliberately raise NotImplementedError; future TODOs remain stubs. No PG rescheduling or assurance solution is supplied.
+## AI Use
+GitHub Copilot assisted with development and testing. Suggestions were reviewed against requirements and verified through human checks and automated tests.
 
-Service booking accepts IDs and a `datetime` (local, minute precision). Console parser accepts exactly `YYYY-MM-DD HH:MM`. Store lookups return None when absent; service lookups raise LookupError. Invalid values, duplicates, conflicts and illegal transitions raise ValueError. Lists are new containers holding the stored objects. No age, duration, patient-conflict or past-date rules apply.
+## Limitations
+SmartCare is a course project using synthetic data only. Records are lost when the application closes. It does not provide authentication, permanent storage, notifications, billing, clinical decision support or production security guarantees. Appointment times use local naive datetimes at minute precision. Production accessibility, scalability, monitoring and timezone handling have not been established.
 
-Scope and Limitations (Stage9)
+## Release Status
+**SmartCare v1.0 — Stage 12 verification in progress.**
 
-* All data exits exists only in memory during the active session and is then lost upon exit. There is no database or file storage in stage 9.
-* Implements side-effect-free query filtering (`queries.py`), modular service orchestration (`services.py`), and a interactive text console (`console.py`)
-* Catches `ValueError` (for invalid inputs, duplicates, and conflicts) and `LookupError` (for unknown IDs) at the console boundary without crashing or lossing the session state.
-* Includes a test suite covering query purity, sorting tie braks, service workflows and cancellation history (51 passing unit tests).
+Final approval, independent reproducibility verification and release SHA are pending.

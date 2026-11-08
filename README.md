@@ -1,16 +1,17 @@
 # Software Technology 1 Assignment 3
 
-One group repository and one evolving SmartCare application.
-Baseline: Stage 6 foundation, 2026 revision 2. This starter deliberately leaves the three Stage 6 service tasks incomplete.
+SmartCare is a Python clinic managment application made by Group 4 for ST1 A3 UG UC
+The application supports patient and practitioner registration, appointment booking, conflict prevention, cancellation, appointment lookup, practitioner appointment listing, filtering and sorting.
 
+Stages 6–9 have been integrated. Stage 12 final release verification is in progress.
 ## Group index
 
-- Group and tutorial: [complete]
-- Member names, GitHub usernames and UG/PG cohorts: [complete]
-- Shared repository URL: [complete]
-- Latest completed stage: [complete]
-- Verified code SHA: [complete]
-- Test command, working directory and observed result: [complete]
+- Group and tutorial: Group 4 - Wednesday 2:30-4:30
+- Member names, GitHub usernames and UG/PG cohorts: 4 members in the UG pathway. See Git Repo for contributer details
+- Shared repository URL: https://github.com/Patrykallen/ST1-Assignment3-Group4
+- Latest completed stage: Stage 9. Stage 12 final release verification is in progress.
+- Verified code SHA: 289029c6e2d5bcdd981f15a6121b1611df01f7a5
+- Test command, working directory and observed result: `python -m pytest -q` from `project/`. 51 passed in 0.06s.
 - Final submitted SHA, if different from tested code SHA: [complete; explain evidence-only changes]
 
 Do not put student IDs, private peer ratings, credentials or personal contact details here.
@@ -44,13 +45,15 @@ Complete the supplied Stage 12 record when you reach Stage 12. UG releases the c
 - [Stage 11 PG activities and evidence](stage11_pg/stage11_activities_and_evidence.md)
 - [Stage 12 activities and evidence](stage12/stage12_activities_and_evidence.md)
 
-Git commands in the practical guide run from this root. Application commands run from project/:
+SmartCare requires Python and uses pytest for development testing.
+
+The Stage 12 release was tested locally using Python 3.14.4 and pytest 8.3.5. This records the tested environment, not a mandatory Python version for every user.
+
+From the repository root:
 
 ```sh
 cd project
+python -m pip install -r requirements-dev.txt
 python main.py
-python -m pytest
-cd ..
-```
-
-Use the approved environment described in the Git/GitHub group guide. The verified baseline is Python 3.13 with pytest 8.3.5. GitHub Copilot is the nominated assistant; verify significant output and record required decisions. Use synthetic data only. Use each supplied record only when you reach that stage in the applicable sequence.
+python main.py --interactive
+python -m pytest -q
