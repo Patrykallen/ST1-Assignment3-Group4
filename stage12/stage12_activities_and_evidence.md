@@ -24,7 +24,7 @@ Tutorial activity 2 and actual readiness matrix. Add exact requirement/acceptanc
 | Cancellation history works - FR-06/FR-07, AC-05.1/AC-05.2 | The tests show that cancellation changes an appointment to CANCELLED while keeping the same object for lookup. | project/tests/test_services.py — test_cancel_scheduled_appointment(); starting SHA: 289029c6e2d5bcdd981f15a6121b1611df01f7a5 | Patrykallen | Waiting for final verification | Run full stage 12 and confirm the tests passes at the release SHA. |
 | Architecture responsibilities are appropriate | The domain classes manage data and appointment status changes. SmartCareDataStore manages current session records, services coordinate application operations, queries handle filtering and sorting, and the console manages user interaction. These responsibilities are separated appropriately. | project/smartcare/domain.py, data_store.py, services.py, queries.py and console.py; starting SHA: 289029c6e2d5bcdd981f15a6121b1611df01f7a5 | Patrykallen | Waiting for final verification | Complete code quality review and confirm that it remains appropriately separated. |
 | AI use is responsible — common recheck / PG assurance | Copilot suggestions were treated as options rather than instantly accepted. Human reviews found improvements to test assertion, validations and documentation. Changes were verified through testing | Stage 6 human/Copilot review records in stage06/stage06_activities_and_evidence.md; Stage 7 review evidence; GitHub pull requests and associated comments. | Patrykallen | Waiting for final verification | Record the final verification outcome in Section E. |
-| System is maintainable | It seperates domain, session storage, application sevices, console interaction and pure queries into individual modules. Tests support future maintenance by helping find unintended changes to behaviour | project/smartcare/domain.py, data_store.py, services.py, queries.py and console.py; project/tests/; starting SHA: 289029c6e2d5bcdd981f15a6121b1611df01f7a5 | Patrykallen | Waiting for final verification | Complete the Section E code quality review |
+| System is maintainable | It separates domain, session storage, application services, console interaction and pure queries into individual modules. Tests support future maintenance by helping find unintended changes to behaviour | project/smartcare/domain.py, data_store.py, services.py, queries.py and console.py; project/tests/; starting SHA: 289029c6e2d5bcdd981f15a6121b1611df01f7a5 | Patrykallen | Waiting for final verification | Complete the Section E code quality review |
 | FR-01–03 register/find and validation | Patient and practitioner registration and lookup are implemented. | project/smartcare/services.py, data_store.py; project/tests/test_services.py; starting SHA: 289029c6e2d5bcdd981f15a6121b1611df01f7a5 | Patrykallen | Waiting for final verification | Run the complete regression suite and confirm all tests pass |
 | FR-04–05 booking and practitioner conflicts | AppointmentService does the bookings using registered patients and practitioners. The booking rules rejects SCHEDULED appointments for the same practitioner at the exact same time, while allowing different practitioners to have appointments at the same time. | project/smartcare/services.py; project/tests/test_services.py; Stage 7 testing evidence; starting SHA: 289029c6e2d5bcdd981f15a6121b1611df01f7a5 | Patrykallen | Waiting for final verification | Run the complete regression suite and confirm all tests pass |
 | FR-06–08 cancellation, history and appointment lookup | SmartCare allows SCHEDULED appointments to be cancelled, it changes their status to CANCELLED and retains the original appointment in the shared data store. Cancelled appointments remain accesable, while repeated cancellation and cancellation of COMPLETED appointments are rejected. Appointment lookup supports getting existing records and reporting unknown IDs. | project/smartcare/domain.py, services.py and data_store.py; project/tests/test_services.py; Stage 6 and Stage 7 test evidence; starting SHA: 289029c6e2d5bcdd981f15a6121b1611df01f7a5 | Patrykallen | Waiting for final verifcation | Run the full regression suite and have all tests pass |
@@ -86,7 +86,7 @@ PG demonstrations through service/tests or not applicable: N/A
 | AI claim | Affected requirement/code | Human check | Accept/Modify/Reject and reason | Actual outcome/action or no change |
 |---|---|---|---|---|
 | Copilot suggested restoring a method docstring and strengthening test assertions to verify that cancelled appointments remain stored. | FR-06/FR-07 — project/smartcare/services.py and project/tests/test_services.py | Compared the suggestions against the cancellation requirements, inspected the implementation and ran pytest after making changes. | Modify — The suggestions were relevant, but human review was required to ensure the assertions checked the actual requirements rather than simply increasing the test count. | Restored the cancellation method docstring and strengthened the retained-history test. Stage 6 tests passed after modification. |
-Access route or approved equivalent / limitations: VisualStudio Copilot was used during Stage 6 to review proposed changes and find potential improvements. It was then checked against the requirements and checked by us.
+Access route or approved equivalent / limitations: Visual Studio Copilot was used during Stage 6 to review proposed changes and find potential improvements. It was then checked against the requirements and checked by us.
 Available AI evidence and missing evidence honestly disclosed: Stage 6 AI review evidence is recorded in stage06/stage06_activities_and_evidence.md, including Copilot suggestions, human decisions and subsequent corrections. 
 
 
@@ -112,11 +112,11 @@ Missing local file or setup gap / remedy and recheck: No files were missing or f
 
 ## G Known limitations debt and release notes
 
-Delivered features: Provides pratient and practitioner lookup and registracitonm, appointment booking, conflict prevention, and appiontment filtering and sorting. the interactive console upports these operations and handles errors accordingly.
-Important fixes: Stages 6-9 completed the functionality, expanded tesing, and implemented queries and console fetures.
-Architecture/quality improvements: Seperates domain entities, in memory storage, fure query functions and console interaction. Contains 51 passing tests.
+Delivered features: Provides patient and practitioner lookup and registration, appointment booking, conflict prevention, and appointment filtering and sorting. the interactive console supports these operations and handles errors accordingly.
+Important fixes: Stages 6-9 completed the functionality, expanded testing, and implemented queries and console features.
+Architecture/quality improvements: Separates domain entities, in memory storage, pure query functions and console interaction. Contains 51 passing tests.
 Known limitations: Only stores information during the current sessions. It does not include authentication, notifications, or billing. 
-AI-assisted development note: VS Copilot assited with earlier dev and testing.
+AI-assisted development note: VS Copilot assisted with earlier dev and testing.
 
 | Debt item | Impact | Priority | Future action | Accepted? / release rationale |
 |---|---|---|---|---|
@@ -125,10 +125,10 @@ AI-assisted development note: VS Copilot assited with earlier dev and testing.
 | Timezone handling | Local naive datetimes cannot reliably represent appointments across timezones. | Medium | Introduce a defined timezone policy if future requirements demand it. | Accepted — current requirements specify local minute-precision times. |
 | Scalability and monitoring | The application has not been verified for concurrent users or production operations. | Medium | Conduct scalability testing and introduce monitoring before considering deployment. | Accepted — enterprise deployment is outside the course scope. |
 | Accessibility and usability | No formal accessibility or usability evaluation has been completed. | Medium | Conduct user testing and accessibility assessments. | Accepted as a documented limitation of the course release. |
-Session-only synthetic data and minute-precision local time: Uses synthetic data stored in memory for only the current session. Appointmetn times use local datetimes. Records are lost when the application closes.
+Session-only synthetic data and minute-precision local time: Uses synthetic data stored in memory for only the current session. Appointment times use local datetimes. Records are lost when the application closes.
 Production auth/roles, portal, notifications, billing/insurance, clinical AI exclusions: Does not include any authentication or role based access. These are outside current scope.
-Scale/concurrency, timezone policy, operations/monitoring, accessibility/usability limitations: Does not have a timezone policy, production monitioring or formal accessibility and usability evaluation. These are accepted within the course scope.
-Difference between accepted scope limit and unresolved required behaviour: Accepted scope limitation is deliberatly excluded from the requirements such as permanant storage. An unresolved requirement is something that is demanded but not demonstrated successfully.
+Scale/concurrency, timezone policy, operations/monitoring, accessibility/usability limitations: Does not have a timezone policy, production monitoring or formal accessibility and usability evaluation. These are accepted within the course scope.
+Difference between accepted scope limit and unresolved required behaviour: Accepted scope limitation is deliberately excluded from the requirements such as permanent storage. An unresolved requirement is something that is demanded but not demonstrated successfully.
 
 
 
@@ -140,9 +140,6 @@ Difference between accepted scope limit and unresolved required behaviour: Accep
 | Application functionality | Main console workflows were demonstrated successfully, and the complete automated regression suite passed. | No confirmed functional defect identified. | Group 4 — retain the existing implementation unless further verification identifies a genuine defect. | No application source changes required so far. | 51 passed in 0.06s using Python 3.14.4 and pytest 8.3.5. | Remaining console edge cases, final integration checks and independent verification require completion. |
 Justified no-change conclusion if no defect found: The initial Stage 12 regression suite passed all 51 tests, and the manually demonstrated application workflows behaved as expected
 Release blockers still open / status:  No confirmed functional release blocker has been identified.
-
-
-## I Git review and integration evidence
 
 ## I Git review and integration evidence
 
@@ -164,7 +161,7 @@ Named substantive contributions: Patrykallen completed the Stage 12 documentatio
 ## J Human release decision
 
 Decision — READY FOR COURSE RELEASE / READY WITH DOCUMENTED LIMITATIONS / NOT YET READY: Ready with documented limitations
-Approver / date / rationale and evidence: Patrykallen / 9/11/26 / Code has all been tested by multiple people in clean enviroments and tests are consistenly passing.
+Approver / date / rationale and evidence: Patrykallen / 9/11/26 / Code has all been tested by multiple people in clean environments and tests are consistently passing.
 What risks remain / conditions / owners: SmartCare remains limited to current-session storage and is not suitable for production healthcare use.
 Can the team explain the system: Yes, all members of the team are able to explain how the system functions.
 Can a change be recovered:  Yes. Git preserves the project history, allowing the team to identify and recover earlier commits. 
@@ -207,11 +204,11 @@ Remaining administration or release dependency:
 
 ## M Formative questions
 
-1. What is a release candidate? A release candidate is a version fo the software that has completed development and is being tested to determine whether it is ready to be released. It should have the intended functionality, with any issues identified and checked before the final approval.
+1. What is a release candidate? A release candidate is a version for the software that has completed development and is being tested to determine whether it is ready to be released. It should have the intended functionality, with any issues identified and checked before the final approval.
 
 2. What is feature freeze and why is it used? Feature freeze is when no features are added to the software before it gets released. It allows us to focus on testing, fixing defects and ensuring the functionality works properly. This reduces the risk of new problems before the final release.
 
-3. What is regression testing in a release context? It involves rerunning tests before a software release to ensure that recnt chagnes havent broken something that was working earlier. It helps confrim that the application still meets the rquirements and that fixes havent accidently introduced new problems.
+3. What is regression testing in a release context? It involves rerunning tests before a software release to ensure that recent changes haven't broken something that was working earlier. It helps confrim that the application still meets the rquirements and that fixes havent accidently introduced new problems.
 
 4. What is a known limitation? A known limitation is a restriction or missing capability that people are aware of and have documented. It does not mean the software is defective, provided that is is outside the scope and requiements.
 
@@ -221,7 +218,7 @@ Remaining administration or release dependency:
 
 7. What is software maintenance? Software maintenance is the process of improving software after it has been released. This includes fixing bugs, improving performance, addressing security issues and overall making hcnages that keeps the software more reliable and compatible with changing requirements.
 
-8. What is the purpose of the individual demonstration/viva? The purpose of the viva is to confirm that each member actually understands the software. It allows student to expalin their individual contributions and demonstrate that they understand all the work they completed.
+8. What is the purpose of the individual demonstration/viva? The purpose of the viva is to confirm that each member actually understands the software. It allows student to explain their individual contributions and demonstrate that they understand all the work they completed.
 
 9. What should the final responsible-AI check establish before release? It should confirm that any AI code or suggestions have been properly reviewed and understood. It should also ensure that no securit risks have been introduced.
 
@@ -230,14 +227,14 @@ Remaining administration or release dependency:
 
 ## N Reflection viva and handover
 
-Strongest evidence SmartCare is ready: The strongest evidence that it is ready for the release is that all 51 automated tests apssed alongside the manual demonstrantions of the main features.
+Strongest evidence SmartCare is ready: The strongest evidence that it is ready for the release is that all 51 automated tests passed alongside the manual demonstrations of the main features.
 Weakest area: The weakest area of our release evidence is the independent verification and final review process. Although all 51 automated tests passed and I successfully tested SmartCare on two computers, the second test was still completed by me rather than another group member.
-How AI use changed from Stage 1 to Stage 12: Throughout the assignment, our group used AI more critically by reviewing its suggestions and verifying them through testing. By stage 12, we understoof that AI can help develop but cannot be responsible for the final system.
+How AI use changed from Stage 1 to Stage 12: Throughout the assignment, our group used AI more critically by reviewing its suggestions and verifying them through testing. By stage 12, we understood that AI can help develop but cannot be responsible for the final system.
 Start doing — engineering and AI use: Establish clear tasks and review Ai suggestions
-Stop doing — engineering and AI use: Relying on AI solutions without fullyh understanding
+Stop doing — engineering and AI use: Relying on AI solutions without fully understanding
 Continue doing — engineering and AI use: Continue using them as tools to identify improvements
 What worked / caused rework / future delivery improvement: Merge conflicts and unclear responsibilities caused some rework, which could be reduced through better communication and earlier integration.
-One paragraph — If AI can write code why do we still need software engineers: AI can generate code, but it cant guarantee that a sustem meets its requirements or is reliable. Software engineers are still needed to make decisons, verify functionality, find risks and take real responsibilty for the final product released.
+One paragraph — If AI can write code why do we still need software engineers: AI can generate code, but it cant guarantee that a system meets its requirements or is reliable. Software engineers are still needed to make decisons, verify functionality, find risks and take real responsibilty for the final product released.
 
 | Preparation item | Own explanation and evidence link |
 |---|---|
