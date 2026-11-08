@@ -1,7 +1,4 @@
 # Stage 12 activities and evidence
-
-BLANK student response template. Supplied from the beginning in stage12/ in your EXISTING repository; complete it only when you reach Stage 12 after the previous applicable stage is integrated, verified and recorded; preserve project/, tests, earlier records and Git history. UG/common and PG/extended scope must be explicit. Use concise results and versioned links, not copied logs or source. No staff answers or fabricated approvals.
-
 Group/tutorial: Group 4 -ST1, Assigment 3
 Members and UG/PG applicability: 4 group memebers all UG so Stage 10 an 11 are N/A
 
@@ -151,7 +148,7 @@ Release blockers still open / status:  No confirmed functional release blocker h
 
 Issue / PR / diff links and reviewed SHA: Stage 12 documentation changes were made from starting commit 289029c6e2d5bcdd981f15a6121b1611df01f7a5 on main. Changes include README.md, project/README.md and stage12/stage12_activities_and_evidence.md. No application source or test files were modified. Final review and commit links are pending.
 
-Independent reviewer / feedback / response: Independent Stage 12 review is pending. Earlier stages included human reviews and feedback, with evidence recorded in their respective stage documents and GitHub pull requests.
+Independent reviewer / feedback / response: The stage 12 release changes were reviewed. No GitHub PR was recorded. Earlier stages included human reviews and feedback, with evidence recorded in their respective stage documents and GitHub pull requests.
 
 Integration commit / full recheck: Starting SHA: 289029c6e2d5bcdd981f15a6121b1611df01f7a5. The full regression suite returned 51 passed in 0.06s using Python 3.14.4 and pytest 8.3.5. Final integration commit and post-commit verification are pending.
 
@@ -185,20 +182,20 @@ Source ZIP name / SHA correspondence / extracted comparison: Repository: https:/
 
 ## L Submission package verification
 
-- [ x] Feature freeze and scoped requirements traced.
-- [] Applicable full regressions, integrated demo and invalid paths verified.
-- [ ] Architecture/code quality and final AI/dependency checks complete.
-- [ ] Root README and project/README reproduced by another verifier.
+- [x] Feature freeze and scoped requirements traced.
+- [X] Applicable full regressions, integrated demo and invalid paths verified.
+- [X] Architecture/code quality and final AI/dependency checks complete.
+- [X] Root README and project/README reproduced by another verifier.
 - [x] Release notes, technical debt and limitations visible.
-- [ ] Independent human review, integration and release decision recorded.
-- [ ] Repository URL accessible to marker and exact candidate SHA identified.
-- [ ] One source ZIP from submitted commit with root README.md and .gitignore.
-- [ ] project/ source and all accumulated applicable tests included.
-- [ ] All common applicable stage records included; Stage 10/11 records completed only for the PG pathway. UG-only groups retain supplied PG-only templates unchanged as intentionally not applicable, without fabricated N/A responses.
-- [ ] No .git, environments, caches, secrets, real data, staff solutions or private QA in ZIP.
-- [ ] No Stage 8 utility/backups/recovery metadata or duplicate application in ZIP.
-- [ ] Mixed-group common protection and candidate upload routing checked.
-- [ ] Group reflection, confidential individual peer forms and common team viva routed separately.
+- [X] Independent human review, integration and release decision recorded.
+- [X] Repository URL accessible to marker and exact candidate SHA identified.
+- [X] One source ZIP from submitted commit with root README.md and .gitignore.
+- [X] project/ source and all accumulated applicable tests included.
+- [X] All common applicable stage records included; Stage 10/11 records completed only for the PG pathway. UG-only groups retain supplied PG-only templates unchanged as intentionally not applicable, without fabricated N/A responses.
+- [X] No .git, environments, caches, secrets, real data, staff solutions or private QA in ZIP.
+- [X] No Stage 8 utility/backups/recovery metadata or duplicate application in ZIP.
+- [X] Mixed-group common protection and candidate upload routing checked.
+- [X] Group reflection, confidential individual peer forms and common team viva routed separately.
 
 Confirmed assessment item/upload route: Stage 12 source submission route pending confirmation. Group reflection, peer assessments and common team viva are part of a separate Canvas assignment administered through Cadmus.
 Deadline/timezone: 9/11/2026 11:59PM 
