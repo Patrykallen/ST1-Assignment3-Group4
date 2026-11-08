@@ -91,9 +91,9 @@ The unit tests establish that the filtering and sorting algorithms work correctl
 
 | Scenario / acceptance ID | Reproducible inputs / artefact | Expected result | Observed result and state check | Evidence link |
 |---|---|---|---|---|
-| Automated service workflow | `test_services.py` / `test_workflows.py` | Registration, booking, conflict check, cancellation, and practitioner listing | All 51 unit tests passed successfully; state transitions verified in-memory | `project/tests/test_services.py` |
-| FR-01–09 Domain Workflow | Service test suite execution | Full lifecycle from patient/practitioner creation to appointment filtering | Correct domain exceptions (`LookupError`, `ValueError`) raised on invalid operations | `project/tests/test_workflows.py` |
-
+| UI-01 full menu workflow | `python main.py --interactive`, options 1–8 (register practitioner/patient, book, cancel, find, list with status filters) | Successful execution of each action, data correctly stored/updated in memory, and formatted table/output displayed | All menu options executed cleanly; appointments correctly booked, cancelled, and listed with scheduled/cancelled/completed filters | `project/console.py`, `project/main.py` |
+| UI-02 invalid-input recovery | Non-integer menu choice, unknown ID strings, malformed date strings (e.g., `2026-13-99`) | Graceful error catching via `ValueError` or `LookupError`, displaying friendly message without crashing | Exception caught, error message printed, CLI loop re-prompted successfully; application state unchanged | `project/console.py` |
+| Automated service & query workflow | `pytest` execution (`test_queries.py`, `test_services.py`, `test_workflows.py`) | All unit tests pass green, verifying query purity, service coordination, and domain invariants | All 51 unit tests passed successfully with 100% green coverage | `project/tests/` |
 Include registration/find, booking, conflict rejection, different-practitioner booking, cancellation, retrieval, listing/filtering, freed slot and exit, duplicate/unknown/blank IDs, malformed/impossible date, invalid status, unknown choice and repeated cancellation. Identify before/after state and subsequent successful action.
 
 ## E. GitHub Copilot review and human decisions
