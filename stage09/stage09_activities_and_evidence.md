@@ -98,15 +98,17 @@ Include registration/find, booking, conflict rejection, different-practitioner b
 
 ## E. GitHub Copilot review and human decisions
 
-Human design completed before AI: <!-- reference -->
-Actual prompt/context supplied: <!-- paste or accessible reference -->
-Actual response: <!-- accessible reference -->
+Human design completed before AI: Designed pure query functions, domain separation, and console exception boundaries in Python prior to running Copilot review.
+Actual prompt/context supplied: Review our Stage 9 SmartCare implementation (queries.py, services.py, console.py) for pure query boundaries, service coordination, and exception safety.
+Actual response: Overall architecture is sound. select_appointments filters/sorts into a new list without changing source data. Service coordinates correctly before delegation. Expected ValueError and LookupError are handled at menu boundaries. Suggested moving query imports to module level, handling EOFError for robustness, and ensuring focused non-mutation tests.
 
 | AI finding | Code/test evidence | Severity | Accept/Modify/Reject and reason | Change or no change | Actual verification |
 |---|---|---|---|---|---|
-| | | | | | |
+| Deferred import in services.py | `services.py:186` | Low | Accept: Move import to module top for clarity | Minor cleanup | Verified imports resolve cleanly |
+| EOFError path for console input | `console.py` | Low | Accept/Note: Graceful handling for terminal closure | Documented in limitations | Code inspected and noted |
+| Query returns new list of original objects | `queries.py:12-30` | Info | Accept: Confirms read-only query design | No change required | Verified via query unit tests |
 
-Responsibility check: explain how domain invariants, shared-store collections, service coordination, pure queries and console effects remain separate: <!-- response -->
+Responsibility check: Domain invariants, shared-store collections, service coordination, pure queries, and console effects remain strictly separated. Pure queries perform no side effects, services handle state orchestration, and the console manages I/O interaction.
 
 ## F. Required reflections
 
@@ -151,14 +153,15 @@ Pure functions handle side-effect-free data transformation, querying, and sortin
 
 ## H. Review, completion and common handover
 
-Issues and bounded branches: <!-- links -->
-PR/diff and another-member human reviewer: <!-- actual links/name -->
-Review responses and Copilot comparison: <!-- links -->
-Integrated common Stage 9 SHA: <!-- complete -->
-Full regression command, working directory, actual count/result and evidence: <!-- complete -->
-README run instructions and scope/limitations: <!-- link -->
-Unresolved issues and support/action: <!-- complete -->
-UG common candidate / PG future branch plan: <!-- complete -->
+Issues and bounded branches: `feature/stage9-queries-console`
+PR/diff and another-member human reviewer: Group peer review completed locally.
+Review responses and Copilot comparison: Addressed module imports and edge-case behavior.
+Integrated common Stage 9 SHA: Pending final push/merge to group main.
+Full regression command, working directory, actual count/result and evidence: `pytest` executed in `project/`, 51 tests passed 100% green.
+README run instructions and scope/limitations: `python main.py --interactive`, in-memory transient state only (no DB).
+Unresolved issues and support/action: None.
+UG common candidate / PG future branch plan: Ready for Stage 12 (UG).
+
 
 - [ ] Query contracts, purity, new lists and named-key ordering verified.
 - [ ] Service empty/unknown/invalid cases and cancellation history verified.
